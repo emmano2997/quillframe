@@ -404,7 +404,7 @@ Modo básico: o livro ocupa a largura, a barra de cores e estilos vira uma gavet
 │                   <                      >                   │
 │  [ Play ]  Speed: 4 pages/s  [ Loop ]  [ Pages ]  [ Search ] │
 ├──────────────────────────────────────────────────────────────┤
-│ [ Like 12 ] [ Favorite ] [ Make a Copy ] [ Export ] [ Share ] │
+│ [ Like 12 ] [ Favorite ] [ Make a Copy ] [ Share ]            │
 │  Comments: [Great animation! 7] [Amazing! 4] [Made me cry 1] │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -418,14 +418,14 @@ Modo básico: o livro ocupa a largura, a barra de cores e estilos vira uma gavet
 | Informações | título, "by {author}" (link para o perfil), geração ("Original", "Copy of original", "Copy of a copy"), data, páginas, likes, favoritos |
 | "Like" e "Favorite" | alternam na hora (atualização otimista) |
 | "Make a Copy" | só se o autor permitir e a geração for 0 ou 1; a cópia vai para My Books → Copies |
-| "Export" | baixa o `.stendhal`, se permitido (documento 02, B13) |
+| "Export" | só nos próprios livros: baixa o `.stendhal` (documento 02, B13). Nos livros de outras pessoas, o botão não aparece |
 | "Share" | copia o link; no celular, usa o menu de compartilhar do sistema |
 | "Report" | modal da seção 10.1, com a página atual já preenchida |
 | "Text view" | mostra o texto da página, sem os códigos, como texto de verdade, para leitores de tela |
 
-**Comentários predefinidos [a decidir, F8]:** "Amazing!", "Beautiful art!", "Great animation!", "Love the story!", "Made me smile", "Made me cry", "So creative!", "Spooky!", "Can't stop watching", "More, please!", "Inspiring", "Masterpiece!". Aparecem como etiquetas com contagem. Clicar marca ou desmarca o seu, e passar o mouse mostra quem marcou.
+**Comentários predefinidos (F8, aprovada):** "Amazing!", "Beautiful art!", "Great animation!", "Love the story!", "Made me smile", "Made me cry", "So creative!", "Spooky!", "Can't stop watching", "More, please!", "Inspiring", "Masterpiece!". Aparecem como etiquetas com contagem. Clicar marca ou desmarca o seu, e passar o mouse mostra quem marcou.
 
-**Visão do dono:** seletor de visibilidade ("Private", "Friends", "Public"), "Allow copies", "Allow comments", "Delete Book" e números do livro.
+**Visão do dono:** seletor de visibilidade ("Private", "Friends", "Public"), "Allow copies", "Allow comments", "Export", "Delete Book" e números do livro.
 
 **Estados especiais**
 - Em revisão (só o dono vê): "Your book is under review before appearing in the Community."
@@ -737,7 +737,7 @@ Alinhado às fases do documento 02, §9.
 
 | Fase | Front-end |
 |---|---|
-| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor |
+| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor. **Feito em 15/10/2026**: renderer e "Book Viewer" com o pacote de referência local, botão no estilo do jogo, escala de GUI. **Pendente**: a arte da fonte própria e o WOFF2, que dependem do desenho dos glifos |
 | Fase 1 · Contas | Title Screen, cadastro, login, verificação, reset de senha, Options básico |
 | Fase 2 · Livros | editor completo, My Books, assinatura, importar/exportar, autosave e modo offline |
 | Fase 3 · Social | leitor completo (Play, índice, busca), Community, perfis, amigos, notificações |
@@ -758,14 +758,14 @@ Alinhado às fases do documento 02, §9.
 | F5 | Fonte da interface | proposta | Fonte pixel própria em WOFF2 + opção "Readable Font" |
 | F6 | Leitura sem conta | proposta | Livros públicos abertos para visitantes |
 | F7 | Celular | proposta | Leitor compacto (só a área de texto, 3×); editor básico |
-| F8 | Comentários predefinidos | a decidir | Lista da seção 6 |
+| F8 | Comentários predefinidos | ✅ decidido | Lista da seção 6 |
 | F9 | Atalhos | proposta | Tabela da seção 5.11 |
 | F10 | Rastreadores | proposta | Nenhum analytics de terceiros |
 | F11 | Som | proposta | Ligado em 50%; nada toca antes da primeira interação; Play sem som de página |
 | F12 | "Clear Formatting" | proposta | Remove só os códigos válidos; os inválidos ficam |
 | F13 | Colar além do limite | proposta | Cola o que cabe e avisa |
 | F14 | Campo "confirmar senha" | proposta | Não usar; botão de mostrar/ocultar |
-| F15 | Regressão visual | proposta | Geometria no CI; pixel a pixel local, com o atlas do jogo |
+| F15 | Regressão visual | ✅ decidido | Geometria no CI ("retratos" da quebra de linha); pixel a pixel local, com o pacote de referência (documento 04, §8) |
 
 ---
 

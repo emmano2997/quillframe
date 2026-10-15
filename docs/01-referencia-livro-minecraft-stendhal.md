@@ -6,6 +6,8 @@
 > - **[confirmado]**: verificado em fonte (wiki oficial, constantes do código do jogo ou os arquivos do autor).
 > - **[inferido]**: deduzido dos arquivos `.stendhal` do autor.
 > - **[a validar]**: conhecido de memória ou de fonte secundária. Precisa ser testado no jogo antes de virar regra.
+>
+> Atualizado na Fase 0: a maioria dos itens **[a validar]** foi conferida no código do jogo (26.3 e 1.21.4). O detalhe de cada regra está no [documento 04](04-motor-de-texto.md).
 
 ---
 
@@ -20,7 +22,7 @@ O fluxo no jogo é: **Livro e Pena → (Assinar) → Livro Escrito**. Depois de 
 
 ### Assinatura
 - O jogador escolhe um **título** na tela de assinatura. O **autor** é o nome do jogador (no Java não dá para mudar). **[confirmado]**
-- Limite do título na tela de assinatura (Java): **15 caracteres**. Via comando/componente (1.20.5+), o título aceita até **32**. **[confirmado / fontes divergem → a validar]**
+- Limite do título na tela de assinatura (Java): **15 caracteres**. Via comando/componente (1.20.5+), o título aceita até **32**. **[confirmado]** (`BookSignScreen` e `WrittenBookContent.TITLE_MAX_LENGTH`, 26.3)
 - A tela avisa que, depois de assinado, o livro não poderá mais ser editado. **[confirmado]**
 
 ### Gerações (cópias)
@@ -42,11 +44,11 @@ Copiar = Livro e Pena + Livro Escrito na bancada. O original não é consumido. 
 | Limite | Valor | Fonte |
 |---|---|---|
 | Páginas por livro (Livro e Pena) | **100** (era 50 até a 1.14) | [confirmado] |
-| Caracteres por página | **1023/1024** | [confirmado] |
+| Caracteres por página | **1023** no editor da 1.21.x, **1024** no 26.x | [confirmado] (documento 04, §4) |
 | Linhas visíveis por página | **14** | [confirmado] |
 | Largura útil da linha | **114 px** | [confirmado: `MAX_TEXT_WIDTH = 114`] |
 | Altura útil do texto | **128 px** (128 ÷ 9 = 14 linhas) | [confirmado: `MAX_TEXT_HEIGHT = 128`] |
-| Altura da linha | **9 px** (glifo de 8 + 1 de espaçamento) | [a validar] |
+| Altura da linha | **9 px** (glifo de 8 + 1 de espaçamento) | [confirmado] (`Font.lineHeight`) |
 | Páginas do Livro Escrito | sem limite desde a 1.20.5 | [confirmado] |
 
 Para comparação, o **Bedrock** usa 50 páginas, 256 caracteres por página e 121 px de largura. **Este projeto segue o Java**: os livros do autor usam `§n` (sublinhado), que só existe no Java, e foram escritos para 114 px.
@@ -82,9 +84,9 @@ Constantes do código do jogo (`BookScreen` / `BookEditScreen`, Yarn 1.21.4): **
  └────────────────────────────────────────┘
 ```
 
-- O texto da página é **preto**, **sem sombra**. **[a validar]**
+- O texto da página é **preto**, **sem sombra**. **[confirmado]** (`BookViewScreen.PAGE_TEXT_STYLE`)
 - Indicador: `book.pageIndicator` = "Page %1$s of %2$s" (pt-BR: "Página %1$s de %2$s"). **[a validar o texto pt-BR]**
-- Os botões de virar página ficam embaixo (◄ à esquerda, ► à direita). Posições aproximadas: x=43 e x=116, y≈157. **[a validar]**
+- Os botões de virar página ficam embaixo (◄ à esquerda, ► à direita), em x=43 e x=116, y=157. O indicador de página é alinhado à direita em x=148. **[confirmado]**
 - Na leitura, o botão ◄ some na primeira página e o ► some na última. Na edição, o ► na última página **cria uma página nova**. **[a validar]**
 - Teclado: PageUp/PageDown viram páginas. **[a validar]**
 - Virar a página toca um som (`item.book.page_turn`). **[confirmado]**
@@ -102,7 +104,7 @@ A arte ASCII do autor depende da **largura exata de cada caractere**. A fonte pa
 - Altura do glifo: **8 px** (ascent 7, descida 1).
 - **Avanço = largura da tinta + 1 px de espaçamento.** A largura é medida pela parte desenhada do glifo.
 - **Espaço = 4 px.**
-- **Negrito (`§l`)**: desenha o glifo duas vezes, a segunda deslocada 1 px para a direita, e o avanço ganha **+1 px**.
+- **Negrito (`§l`)**: desenha o glifo duas vezes, a segunda deslocada 1 px para a direita, e o avanço ganha **+1 px** (inclusive no espaço, que vira 5 px). Nos glifos da Unifont, o deslocamento e o acréscimo são de **0,5 px**.
 - `§` tem largura **0**.
 
 ### Tabela de larguras (tinta → avanço)
@@ -122,7 +124,7 @@ Exemplo: a linha `i i i i` (4 × 2 + 3 × 4 = 20 px) ocupa bem menos que `M M M 
 
 ### Caracteres fora da fonte bitmap → GNU Unifont **[confirmado]**
 Símbolos que não existem na fonte principal, como `☼ ✮ ☄ ❈ ★ ☺` e emojis (`💔 📞 💋 🌍 💍 ✋ ⛔`), caem para a **GNU Unifont** (atualizada para a 16.0/17.0 nas versões 1.21.x).
-- São desenhados em **8 px de altura** (a Unifont tem 16 px, então fica em meia escala). **[a validar]**
+- São desenhados em **8 px de altura** (a Unifont tem 16 px, então fica em meia escala), com avanço = metade da largura da tinta + 1. **[confirmado]** (documento 04, §3)
 - São **monocromáticos e pintados com a cor do texto**. Por isso `§4💔` aparece vermelho-escuro no jogo. **No site, os emojis NÃO podem aparecer coloridos como no celular.** **[confirmado: o jogo não suporta modificadores nem apresentação de emoji]**
 - Modificadores (tom de pele, ZWJ) não funcionam.
 
@@ -134,8 +136,8 @@ Como o jogo distribui o texto nas 14 linhas:
 
 1. `\n` (Enter) força uma quebra. **[confirmado]**
 2. O texto é medido em pixels, somando os avanços, até passar de **114 px**. **[confirmado]**
-3. Ao estourar, a linha é cortada **no último espaço** que coube, e esse espaço é consumido. Se a palavra sozinha for maior que a linha, ela é cortada no meio. **[a validar]**
-4. Linhas além da 14ª não aparecem. Na edição, o jogo impede digitar além disso. **[a validar]**
+3. Ao estourar, a linha é cortada **no último espaço** que coube, e esse espaço é consumido. Se a palavra sozinha for maior que a linha, ela é cortada no meio. **[confirmado]**
+4. Linhas além da 14ª não aparecem. Na edição, o jogo impede digitar além disso; o editor da 1.21.x não conta a linha vazia depois de um `\n` final, o do 26.x conta. **[confirmado]** (documento 04, §4)
 
 **Isso explica a técnica do autor.** Em `"You can say that we    are nothing"`, os espaços extras completam a linha até 114 px para que "are" vá para a linha de baixo exatamente onde ele quer. O mesmo vale para `"Fará com que buracos negros"` e para os desenhos que continuam em linhas longas (`o sol e a lua`, página 1). **O motor de quebra do site precisa ser idêntico ao do jogo**, senão esses livros desmontam.
 
@@ -178,7 +180,8 @@ Como o jogo distribui o texto nas 14 linhas:
 ### Regras de interpretação (Java)
 - **Uma cor apaga os estilos ativos.** Em `§l§cX`, o X fica vermelho **sem** negrito. Já `§c§lX` fica vermelho **e** negrito. Para combinar cor e estilo, a cor vem primeiro. No Bedrock é diferente: os estilos continuam depois da cor. **[confirmado]**
 - Os códigos **não ocupam espaço** e não contam para a largura. Contam, porém, para o limite de caracteres. **[confirmado]**
-- **Código inválido** (`§` seguido de caractere que não é código): o `§` **e** o caractere seguinte somem da tela. **[a validar]** Isso aparece nos livros do autor:
+- Códigos em maiúscula funcionam igual aos minúsculos (`§L` = `§l`). **[confirmado]**
+- **Código inválido** (`§` seguido de caractere que não é código): o `§` **e** o caractere seguinte somem da tela. **[confirmado]** Isso aparece nos livros do autor:
 
 | Ocorrência | Onde | Efeito esperado |
 |---|---|---|
@@ -186,6 +189,7 @@ Como o jogo distribui o texto nas 14 linhas:
 | `§§` | good_luck (globo, cama) | esconde o par |
 | `§/`, `§,` | good_luck (globo) | esconde o caractere |
 | `§i` | candles (título) | esconde o "i" no Java (no Bedrock é uma cor) |
+| `§` + quebra de linha | magnolia, vem_comigo, two_birds | esconde a quebra: o texto continua na mesma linha |
 
 O site deve reproduzir isso exatamente, ou a arte desses frames fica 1 caractere deslocada.
 
@@ -235,8 +239,8 @@ pages:
 - Cada página começa numa linha iniciada por **`#- `** (cerquilha, hífen, espaço). O conteúdo começa logo depois do prefixo e continua nas linhas seguintes até o próximo `#-`.
 - As quebras de linha dentro da página são `\n` reais.
 - Os códigos de formatação ficam embutidos no texto com `§`.
-- `#- ` seguido de linha vazia representa uma página que começa com quebra de linha ou uma página vazia. Todos os arquivos terminam com uma página vazia `#- `.
-- **[a validar]**: se a quebra de linha antes do próximo `#-` faz parte da página ou é só separador, e se o espaço depois de `#-` é obrigatório. Isso se testa exportando no jogo uma página com `\n` no final e outra que começa com espaço.
+- `#- ` seguido de linha vazia representa uma página que começa com quebra de linha ou uma página vazia. Quase todos os arquivos terminam com uma página vazia `#- ` (exceções: `partitura` e `links`).
+- **Resolvido [inferido]**: a quebra de linha antes do próximo `#- ` é só separador. As páginas são unidas por `\n` e o arquivo não termina com `\n` extra. Essa regra reproduz os 10 livros de teste byte a byte, e todas as 266 páginas usam `#- ` com espaço (documento 04, §7).
 
 ---
 

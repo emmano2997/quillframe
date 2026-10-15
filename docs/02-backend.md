@@ -99,11 +99,11 @@ Com o `packages/shared`, **o servidor valida com o mesmo código que o editor us
 | Rate limit | Upstash Redis (gratuito) | Os contadores sobrevivem à hibernação do Render |
 | E-mail | Resend (gratuito) | Só envia para qualquer endereço com **domínio próprio verificado** |
 | DNS, TLS, DDoS, CAPTCHA | Cloudflare (gratuito) | Exige domínio próprio |
-| Domínio | registro.br ou outro registrador | **Único custo**. Um `.com.br` sai por volta de R$ 40/ano **[a validar]** |
+| Domínio | registro.br ou outro registrador | **Único custo**, aprovado (B9): um `.com.br` sai por volta de R$ 40/ano |
 | Monitoramento | Sentry e UptimeRobot (gratuitos) | |
 | CI/CD e jobs | GitHub Actions | |
 
-Sem domínio próprio, o site funciona no subdomínio do Render, mas **não dá para enviar os e-mails de verificação e de recuperação de senha** para qualquer usuário. Por isso o domínio está nas decisões (B9).
+O domínio próprio é necessário porque, sem ele, o site até funciona no subdomínio do Render, mas **não dá para enviar os e-mails de verificação e de recuperação de senha** para qualquer usuário (B9).
 
 ---
 
@@ -414,7 +414,8 @@ model AuditLog {
 - Contadores (`likeCount`, `favoriteCount`, `pageCount`) são atualizados na mesma transação da ação.
 - Livros e contas usam exclusão lógica (`deletedAt`, `PENDING_DELETION`). Um job apaga de vez depois do prazo (7.5).
 - Limites: até **1000 páginas** por livro e 200 rascunhos por usuário **[proposta]**. A D3 permite passar de 100 páginas; o limite rígido só evita abuso.
-- Contagem de caracteres da página igual à do Java, que conta unidades UTF-16 (`String.length()`). Assim, um emoji como `💔` conta 2 **[a validar]**. A função fica no `packages/shared` e é a mesma no front e no back.
+- Contagem de caracteres da página igual à do Java, que conta unidades UTF-16 (`String.length()`). Assim, um emoji como `💔` conta 2 **[confirmado]** (documento 04, §4). A função fica no `packages/shared` e é a mesma no front e no back.
+- Limite de linhas: até 14, sem contar a linha vazia depois de um `\n` final, como no editor da 1.21.x em que os livros do autor foram escritos (documento 04, §4).
 
 ---
 
@@ -487,7 +488,7 @@ Aplica as gerações do documento 01, §1:
 
 ### 3.6 Importação e exportação `.stendhal`
 - **Importar:** `POST /api/books/import` com o texto do arquivo (até 2 MB, UTF-8 estrito). O parser do `packages/shared` (documento 01, §7) valida o cabeçalho, as páginas e os limites. O resultado é um **rascunho** de quem importou. A linha `author:` é ignorada, porque o autor é sempre a conta (D4). Títulos acima de 64 caracteres são cortados.
-- **Exportar:** `GET /api/books/:id/export` gera o arquivo no mesmo formato. Os próprios livros sempre podem ser exportados; os de outras pessoas, só se forem públicos e com `allowCopies` **[a decidir, B13]**.
+- **Exportar:** `GET /api/books/:id/export` gera o arquivo no mesmo formato. **Só o dono exporta** (B13): o livro de outra pessoa nunca vira arquivo. Quem quiser guardar o livro de alguém usa "Make a copy", que mantém o autor original e some se o original sair do ar.
 - O nome do arquivo vem do título, só com `[a-z0-9_-]`. Isso impede injeção no header `Content-Disposition`.
 
 ### 3.7 Rede social
@@ -587,7 +588,7 @@ Acesso: 🔓 público · 🔑 logado · 🔐 logado + step-up recente · 🛡️
 | POST | `/api/books/:id/sign` | 🔑 | `{title, visibility, acceptGuidelines}` |
 | PATCH | `/api/books/:id/visibility` | 🔑 | só livro assinado |
 | DELETE | `/api/books/:id` | 🔑 | dono |
-| GET | `/api/books/:id/export` | 🔑 | `.stendhal` (3.6) |
+| GET | `/api/books/:id/export` | 🔑 | `.stendhal`, só para o dono (3.6) |
 | POST | `/api/books/:id/copy` | 🔑 | cria a cópia (3.5) |
 
 **Social**
@@ -930,7 +931,8 @@ Segurança dos e-mails: domínio com **SPF, DKIM e DMARC** (`p=reject`), para ni
 ### 5.14 Dependências e cadeia de suprimentos
 - `pnpm-lock.yaml` versionado; o CI instala com `--frozen-lockfile`.
 - O pnpm 10 não roda scripts de instalação das dependências por padrão. Liberar só os necessários (`argon2`, `prisma`) em `onlyBuiltDependencies`.
-- `minimumReleaseAge` do pnpm para só aceitar versões publicadas há alguns dias: a maioria dos pacotes comprometidos é descoberta nesse intervalo **[a validar a versão do pnpm]**.
+- `minimumReleaseAge` do pnpm para só aceitar versões publicadas há alguns dias: a maioria dos pacotes comprometidos é descoberta nesse intervalo. Em uso: 3 dias, no `pnpm-workspace.yaml` **[confirmado]**.
+- O projeto fixa o **pnpm 10** (`packageManager` no `package.json`). A partir do 11, o pnpm é distribuído como executável nativo, e o do 12 não roda em todo processador (falhou na máquina de desenvolvimento).
 - Dependabot semanal; `pnpm audit --prod` no CI falha com vulnerabilidade alta ou crítica.
 - CodeQL (análise estática) no repositório **[a validar: gratuito em repositório público]**.
 - Poucas dependências: cada biblioteca nova precisa de justificativa no PR.
@@ -1240,7 +1242,7 @@ Rodam como scripts no GitHub Actions, ligados direto no banco. Não há endpoint
 
 | Fase | Back-end | Pronta quando |
 |---|---|---|
-| Fase 0 · Fundação | monorepo, CI, Docker Compose, `packages/shared` (parser `§`, quebra de linha, `.stendhal`) | os 11 livros do autor passam pelo parser e pelo layout sem diferença |
+| Fase 0 · Fundação | monorepo, CI, Docker Compose, `packages/shared` (parser `§`, quebra de linha, `.stendhal`) | os livros do autor passam pelo parser e pelo layout sem diferença. **Feito em 15/10/2026** com 10 livros (o `links` ficou de fora por ser pessoal); regras conferidas no código do jogo (documento 04) |
 | Fase 1 · Contas | cadastro, verificação, login, sessões, CSRF, rate limit, headers, reset de senha, auditoria | os testes de segurança da seção 5 passam; ZAP sem alertas altos |
 | Fase 2 · Livros | rascunhos, autosave, assinatura, visibilidade, importação e exportação | escrever → assinar → publicar funciona e a matriz de autorização passa |
 | Fase 3 · Social | perfis, amizades, bloqueios, likes, favoritos, comentários, cópias, feed, busca, notificações | os testes de bloqueio e de visibilidade passam |
@@ -1263,17 +1265,18 @@ Rodam como scripts no GitHub Actions, ligados direto no banco. Não há endpoint
 | B6 | Idade mínima | ✅ decidido | **16+**. Validar se o "até 16 anos" do art. 24 inclui quem tem 16 |
 | B7 | Hospedagem | ✅ decidido | Planos gratuitos: Render, Neon, Upstash, Resend, Cloudflare |
 | B8 | Login por e-mail ou username | proposta | **Só e-mail** (o username é público) |
-| B9 | Domínio próprio | a decidir | Necessário para os e-mails (Resend) e para a Cloudflare |
+| B9 | Domínio próprio | ✅ decidido | **Sim**, por cerca de R$ 40/ano. Necessário para os e-mails (Resend) e para a Cloudflare |
 | B10 | Upload de imagens | proposta | **Nenhum** na v1; avatares pré-definidos |
 | B11 | Comentários | ✅ decidido | **Só predefinidos** (README) |
 | B12 | Cópias | proposta | Apontam para o original e somem se ele sair do ar |
-| B13 | Exportar livro de outra pessoa | a decidir | Permitir só se for público e com `allowCopies`? |
+| B13 | Exportar livro de outra pessoa | ✅ decidido | **Não**: só o dono exporta. Para guardar o livro de alguém, existe "Make a copy" |
 | B14 | Limite rígido de páginas | proposta | 1000 por livro |
-| B15 | Contagem de caracteres | a validar | Unidades UTF-16, como o Java |
+| B15 | Contagem de caracteres | ✅ confirmado | Unidades UTF-16, como o Java (documento 04, §4) |
 | B16 | Contas novas no feed | proposta | Fora de "New" e "Trending" nas primeiras 72 h |
 | B17 | Proteções de 16–17 anos | proposta | Travadas até os 18 na v1 |
 | B18 | Tempo real | proposta | Consulta a cada 60 s; sem WebSocket na v1 |
 | B19 | Perdeu o 2FA e os códigos | proposta | Suporte manual + espera de 7 dias |
+| B20 | Versão do TypeScript | ✅ decidido | **6.0**: o `typescript-eslint` ainda não aceita o 7. O Node 24 roda os arquivos `.ts` direto, sem etapa de build na API |
 
 ---
 
