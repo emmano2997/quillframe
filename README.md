@@ -8,6 +8,8 @@ Editor e leitor web de livros no estilo do livro e pena do Minecraft (com os rec
 
 ## Documentação
 - [01 — Referência: o livro do Minecraft e o mod Stendhal](docs/01-referencia-livro-minecraft-stendhal.md)
+- [02 — Planejamento do back-end](docs/02-backend.md)
+- [03 — Planejamento do front-end](docs/03-frontend.md)
 
 ---
 Não é um produto oficial do Minecraft. Não é aprovado nem associado à Mojang ou à Microsoft.
