@@ -1,7 +1,9 @@
-// De onde vêm os desenhos dos glifos. Enquanto a fonte própria não existe (documento 01, D5), há duas
-// fontes: o pacote de referência local, com a fonte do jogo (só em desenvolvimento), e "caixas" do
-// tamanho de cada glifo, que mostram o layout sem arte nenhuma.
-import { GLYPH_KIND, glyphAdvance, glyphKind } from '@quillframe/shared'
+// De onde vêm os desenhos dos glifos:
+// - a fonte pixel do projeto (assets/pack/font, documento 05), que é a fonte do site;
+// - o pacote de referência local, com a fonte do jogo (só em desenvolvimento, para comparar);
+// - "caixas" do tamanho de cada glifo, que mostram o layout sem arte nenhuma.
+import { GLYPH_KIND, glyphAdvance, glyphKind, parsePixelFont, type PixelGlyph } from '@quillframe/shared'
+import packFontText from '../../../../assets/pack/font/quillframe-font.txt?raw'
 
 /** Pixels do canvas por pixel de GUI: 2, para a meia escala da Unifont e o negrito de 0,5 px */
 export const INTERNAL_SCALE = 2
@@ -15,7 +17,7 @@ export interface GlyphMask {
 }
 
 export interface GlyphSource {
-  readonly kind: 'reference' | 'boxes'
+  readonly kind: 'pack' | 'reference' | 'boxes'
   mask(codePoint: number): GlyphMask | null
   /** Outro glifo com o mesmo avanço, para o §k (ofuscado) */
   randomSameWidth(codePoint: number, random: () => number): number
@@ -63,6 +65,59 @@ export function createBoxGlyphs(): GlyphSource {
       return cache.get(codePoint) ?? null
     },
     randomSameWidth: (codePoint) => codePoint,
+  }
+}
+
+function pixelGlyphMask(glyph: PixelGlyph): GlyphMask {
+  const width = glyph.rows[0]?.length ?? 0
+  const image = createCanvas(width * S, glyph.rows.length * S)
+  const ctx = image.getContext('2d')
+  if (ctx) {
+    ctx.fillStyle = '#fff'
+    glyph.rows.forEach((row, y) =>
+      row.forEach((on, x) => {
+        if (on) ctx.fillRect(x * S, y * S, S, S)
+      }),
+    )
+  }
+  return { image, top: glyph.top * S }
+}
+
+/**
+ * A fonte do projeto. Os caracteres que o jogo tira da Unifont (emojis, ✮, ☼...) vêm de
+ * `unifont`, quando houver; o que não tem desenho vira caixa, sem mudar o layout.
+ */
+export function createPackGlyphs(unifont: GlyphSource | null = null): GlyphSource {
+  const font = parsePixelFont(packFontText)
+  const boxes = createBoxGlyphs()
+  const cache = new Map<number, GlyphMask | null>()
+
+  // Glifos da fonte agrupados por avanço, para o §k
+  const byAdvance = new Map<number, number[]>()
+  for (const cp of font.glyphs.keys()) {
+    const advance = glyphAdvance(cp)
+    byAdvance.set(advance, [...(byAdvance.get(advance) ?? []), cp])
+  }
+
+  return {
+    kind: 'pack',
+    mask(codePoint) {
+      if (cache.has(codePoint)) return cache.get(codePoint) ?? null
+      const glyph = font.glyphs.get(codePoint)
+      const kind = glyphKind(codePoint)
+      const mask = glyph
+        ? pixelGlyphMask(glyph)
+        : kind === GLYPH_KIND.unifont && unifont
+          ? unifont.mask(codePoint)
+          : boxes.mask(codePoint)
+      cache.set(codePoint, mask)
+      return mask
+    },
+    randomSameWidth(codePoint, random) {
+      const options = byAdvance.get(glyphAdvance(codePoint))
+      if (!options || options.length === 0) return codePoint
+      return options[Math.floor(random() * options.length)] ?? codePoint
+    },
   }
 }
 

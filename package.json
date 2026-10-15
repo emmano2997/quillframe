@@ -17,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "font:metrics": "node scripts/extract-font-metrics.mjs",
+    "font:specimen": "node scripts/font-specimen.mjs",
     "reference-pack": "node scripts/reference-pack.mjs"
   },
   "devDependencies": {
