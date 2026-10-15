@@ -1,0 +1,75 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--gui));
+  min-height: 100%;
+  padding: calc(6 * var(--gui));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: calc(4 * var(--gui));
+}
+
+.title {
+  margin: 0;
+  font-size: calc(10 * var(--gui));
+  font-weight: normal;
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(8 * var(--gui));
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--gui));
+  min-width: calc(110 * var(--gui));
+  padding: calc(4 * var(--gui));
+  background: var(--panel);
+}
+
+.panelTitle {
+  margin: 0 0 calc(2 * var(--gui));
+  font-size: inherit;
+  color: var(--text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--gui));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bookTitle {
+  margin: 0;
+  text-align: center;
+}
+
+.hint {
+  max-width: calc(200 * var(--gui));
+  margin: 0;
+  color: var(--text-muted);
+  font-size: calc(6 * var(--gui));
+}
+
+.error {
+  margin: 0;
+  color: #ff5555;
+}
+
+.fileInput {
+  display: none;
+}

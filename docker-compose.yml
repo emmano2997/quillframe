@@ -1,0 +1,33 @@
+# Serviços de desenvolvimento (documento 02, §8.3). Só escutam em 127.0.0.1.
+# As senhas aqui são apenas para a máquina local; produção usa as variáveis do Render.
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: quillframe
+      POSTGRES_PASSWORD: quillframe_dev_only
+      POSTGRES_DB: quillframe
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quillframe -d quillframe']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '127.0.0.1:6379:6379'
+
+  # Captura os e-mails enviados em desenvolvimento: http://127.0.0.1:8025
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    ports:
+      - '127.0.0.1:8025:8025'
+      - '127.0.0.1:1025:1025'
+
+volumes:
+  pgdata:

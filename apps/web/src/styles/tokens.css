@@ -1,0 +1,20 @@
+/* Tokens visuais (documento 03, §2.4). Toda medida da interface é múltipla de --gui. */
+:root {
+  /* Um "pixel de GUI"; o hook useGuiScale ajusta para 1px, 2px, 3px ou 4px */
+  --gui: 2px;
+
+  --text: #ffffff;
+  --text-shadow: #3f3f3f;
+  --text-muted: #a0a0a0;
+  --splash: #ffff55;
+  --panel: rgba(0, 0, 0, 0.5);
+  --background: #1d1712;
+  --background-tile: #2a2018;
+  --focus: #ffffff;
+
+  --button-top: #8e8e8e;
+  --button-bottom: #6a6a6a;
+  --button-light: #b5b5b5;
+  --button-dark: #4a4a4a;
+  --button-disabled: #2c2c2c;
+}

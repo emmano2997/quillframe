@@ -1,0 +1,9 @@
+# Texto sempre com LF no repositório e na cópia de trabalho, inclusive no Windows.
+* text=auto eol=lf
+
+# Os livros de teste precisam ficar byte a byte iguais aos exportados pelo Stendhal.
+*.stendhal -text
+
+*.png binary
+*.woff2 binary
+*.zip binary

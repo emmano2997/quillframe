@@ -1,0 +1,33 @@
+/* Botão de "pedra" com bisel, arte própria inspirada nos menus do jogo (documento 03, §2.2) */
+.button {
+  height: calc(20 * var(--gui));
+  min-width: calc(98 * var(--gui));
+  padding: 0 calc(6 * var(--gui));
+  font: inherit;
+  color: var(--text);
+  text-shadow: var(--gui) var(--gui) 0 var(--text-shadow);
+  background: linear-gradient(var(--button-top), var(--button-bottom));
+  border: var(--gui) solid #000;
+  box-shadow:
+    inset var(--gui) var(--gui) 0 var(--button-light),
+    inset calc(-1 * var(--gui)) calc(-2 * var(--gui)) 0 var(--button-dark);
+  cursor: pointer;
+}
+
+.wide {
+  min-width: calc(200 * var(--gui));
+}
+
+.button:hover:not(:disabled),
+.button:focus-visible {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.button:disabled {
+  color: var(--text-muted);
+  text-shadow: none;
+  background: var(--button-disabled);
+  box-shadow: none;
+  cursor: default;
+}

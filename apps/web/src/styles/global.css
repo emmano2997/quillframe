@@ -1,0 +1,62 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  color: var(--text);
+  background-color: var(--background);
+  /* Mosaico escuro próprio, no lugar da textura de terra dos menus do jogo */
+  background-image:
+    linear-gradient(45deg, var(--background-tile) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--background-tile) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--background-tile) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--background-tile) 75%);
+  background-size: calc(16 * var(--gui)) calc(16 * var(--gui));
+  background-position:
+    0 0,
+    0 calc(8 * var(--gui)),
+    calc(8 * var(--gui)) calc(-8 * var(--gui)),
+    calc(-8 * var(--gui)) 0;
+  /* A fonte pixel própria ainda não existe (documento 03, F5); até lá, a do sistema */
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: calc(8 * var(--gui));
+  line-height: 1.25;
+  text-shadow: var(--gui) var(--gui) 0 var(--text-shadow);
+}
+
+:focus-visible {
+  outline: var(--gui) solid var(--focus);
+  outline-offset: var(--gui);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

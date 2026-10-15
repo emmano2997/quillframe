@@ -1,0 +1,60 @@
+.screen {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  min-height: 100%;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(4 * var(--gui));
+  padding: calc(8 * var(--gui));
+}
+
+.logoArea {
+  position: relative;
+  margin-bottom: calc(16 * var(--gui));
+}
+
+.logo {
+  margin: 0;
+  font-size: calc(24 * var(--gui));
+  letter-spacing: calc(2 * var(--gui));
+  color: #d8d8d8;
+  text-shadow:
+    calc(2 * var(--gui)) calc(2 * var(--gui)) 0 #3f3f3f,
+    calc(-1 * var(--gui)) calc(-1 * var(--gui)) 0 #ffffff;
+}
+
+.splash {
+  position: absolute;
+  right: calc(-24 * var(--gui));
+  bottom: calc(-6 * var(--gui));
+  margin: 0;
+  color: var(--splash);
+  text-shadow: var(--gui) var(--gui) 0 #3f3f15;
+  transform: rotate(-20deg);
+  animation: pulse 0.5s ease-in-out infinite alternate;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  to {
+    transform: rotate(-20deg) scale(1.08);
+  }
+}
+
+.row {
+  display: flex;
+  gap: calc(4 * var(--gui));
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(8 * var(--gui));
+  padding: calc(2 * var(--gui)) calc(4 * var(--gui));
+  font-size: calc(6 * var(--gui));
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Este pacote roda no navegador e no Node: nada de APIs específicas de um dos dois
+    "types": []
+  },
+  "include": ["src"]
+}

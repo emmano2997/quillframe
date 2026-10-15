@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Segredos: só o .env.example vai para o repositório
+.env
+.env.*
+!.env.example
+
+# Pacote de referência gerado a partir da instalação local do Minecraft.
+# Nada da Mojang entra no repositório (documento 01, D6).
+.reference-pack/
+
+# Editores e sistema
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log

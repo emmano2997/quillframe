@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Só instala versões publicadas há pelo menos 3 dias (em minutos).
+# A maioria dos pacotes comprometidos é descoberta nesse intervalo (documento 02, §5.14).
+minimumReleaseAge: 4320
+
+# Dependências que podem rodar scripts de instalação. Qualquer outra é bloqueada.
+onlyBuiltDependencies: []
