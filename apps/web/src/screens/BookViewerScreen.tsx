@@ -1,7 +1,7 @@
 import { parseStendhal, type StendhalBook } from '@quillframe/shared'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { BookView } from '../book/BookView.tsx'
-import { createBoxGlyphs, loadReferenceGlyphs, type GlyphSource } from '../book/glyphs.ts'
+import { createBoxGlyphs, createPackGlyphs, loadReferenceGlyphs, type GlyphSource } from '../book/glyphs.ts'
 import { en, format } from '../strings/en.ts'
 import { Button } from '../ui/Button.tsx'
 import styles from './BookViewerScreen.module.css'
@@ -18,6 +18,13 @@ interface BookViewerScreenProps {
 }
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024
+
+type FontMode = 'pack' | 'reference' | 'boxes'
+const FONT_LABELS: Record<FontMode, string> = {
+  pack: en.viewer.packFont,
+  reference: en.viewer.referenceFont,
+  boxes: en.viewer.boxFont,
+}
 
 async function loadBackground(): Promise<HTMLImageElement | null> {
   const image = new Image()
@@ -36,8 +43,9 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
     glyphs: GlyphSource
     background: HTMLImageElement | null
   } | null>(null)
-  const [useReference, setUseReference] = useState(true)
+  const [fontMode, setFontMode] = useState<FontMode>('pack')
   const [boxes] = useState(createBoxGlyphs)
+  const [pack, setPack] = useState(() => createPackGlyphs())
   const fileInput = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -45,7 +53,10 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
     if (!import.meta.env.DEV) return
     void import('../dev/sampleBooks.ts').then((module) => setSamples(module.sampleBooks))
     void Promise.all([loadReferenceGlyphs(), loadBackground()]).then(([glyphs, background]) => {
-      if (glyphs) setReference({ glyphs, background })
+      if (!glyphs) return
+      setReference({ glyphs, background })
+      // Emojis e símbolos da Unifont: no desenvolvimento, vêm do pacote de referência
+      setPack(createPackGlyphs(glyphs))
     })
   }, [])
 
@@ -71,7 +82,11 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
     open(await file.text())
   }
 
-  const active = useReference && reference ? reference : null
+  const modes: FontMode[] = reference ? ['pack', 'reference', 'boxes'] : ['pack', 'boxes']
+  const cycleFont = () => setFontMode((mode) => modes[(modes.indexOf(mode) + 1) % modes.length] ?? 'pack')
+  const glyphs =
+    fontMode === 'reference' && reference ? reference.glyphs : fontMode === 'boxes' ? boxes : pack
+  const background = fontMode === 'reference' ? (reference?.background ?? null) : null
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
@@ -102,11 +117,7 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
               </ul>
             </>
           )}
-          {reference && (
-            <Button onClick={() => setUseReference((value) => !value)}>
-              {useReference ? en.viewer.referenceFont : en.viewer.boxFont}
-            </Button>
-          )}
+          <Button onClick={cycleFont}>{FONT_LABELS[fontMode]}</Button>
         </aside>
 
         <section>
@@ -116,12 +127,7 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
               <p className={styles.bookTitle}>
                 {book.title} {format(en.viewer.byAuthor, { author: book.author })}
               </p>
-              <BookView
-                book={book}
-                glyphs={active?.glyphs ?? boxes}
-                background={active?.background ?? null}
-                scale={guiScale}
-              />
+              <BookView book={book} glyphs={glyphs} background={background} scale={guiScale} />
             </>
           )}
           {!reference && <p className={styles.hint}>{en.viewer.noReference}</p>}

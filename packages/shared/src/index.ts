@@ -21,6 +21,14 @@ export {
 export { GLYPH_METRICS_GAME_VERSION } from './font/glyph-metrics.generated.ts'
 export { GLYPH_KIND, glyphAdvance, glyphKind, type GlyphKind } from './font/metrics.ts'
 export {
+  composeGlyph,
+  GLYPH_CELL_ROWS,
+  parsePixelFont,
+  PixelFontError,
+  type PixelFont,
+  type PixelGlyph,
+} from './font/pixel-font.ts'
+export {
   editorLines,
   fitsInGamePage,
   readerLines,

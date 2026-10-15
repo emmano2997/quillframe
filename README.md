@@ -11,6 +11,7 @@ Editor e leitor web de livros no estilo do livro e pena do Minecraft (com os rec
 - [02 — Planejamento do back-end](docs/02-backend.md)
 - [03 — Planejamento do front-end](docs/03-frontend.md)
 - [04 — Motor de texto do livro](docs/04-motor-de-texto.md)
+- [05 — Fonte pixel do projeto](docs/05-fonte-pixel.md)
 
 ## Como rodar
 
@@ -33,13 +34,20 @@ pnpm dev:web          # Book Viewer → escolha um livro
 pnpm font:metrics     # regenera a tabela de larguras dos caracteres (só números)
 ```
 
+A fonte do livro é arte própria, num arquivo de texto editável (documento 05):
+
+```sh
+pnpm font:specimen    # gera docs/img/fonte-quillframe.png com todos os glifos
+```
+
 ## Estrutura
 
 ```
 apps/api/          API (Fastify)
 apps/web/          site (React + Vite)
 packages/shared/   código dos dois lados: códigos §, larguras, quebra de linha, formato .stendhal
-scripts/           ferramentas que leem a instalação local do Minecraft
+assets/pack/       arte própria do projeto (fonte pixel)
+scripts/           ferramentas (amostra da fonte, leitura da instalação local do Minecraft)
 docs/              planejamento e especificações
 ```
 
