@@ -1,5 +1,13 @@
 @import './tokens.css';
 
+/* Fonte pixel própria (documento 05), gerada de assets/pack/font/quillframe-font.txt por pnpm font:web.
+   8 pixels por em: fica nítida em tamanhos múltiplos de 8 pixels de GUI. */
+@font-face {
+  font-family: quillframe;
+  src: url('../../../../assets/pack/font/quillframe.woff2') format('woff2');
+  font-display: block;
+}
+
 *,
 *::before,
 *::after {
@@ -28,8 +36,8 @@ body {
     0 calc(8 * var(--gui)),
     calc(8 * var(--gui)) calc(-8 * var(--gui)),
     calc(-8 * var(--gui)) 0;
-  /* A fonte pixel própria ainda não existe (documento 03, F5); até lá, a do sistema */
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  /* Caracteres fora da fonte pixel (documento 05, §2) caem na do sistema */
+  font-family: var(--font-ui);
   font-size: calc(8 * var(--gui));
   line-height: 1.25;
   text-shadow: var(--gui) var(--gui) 0 var(--text-shadow);

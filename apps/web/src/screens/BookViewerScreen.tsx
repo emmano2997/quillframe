@@ -1,7 +1,13 @@
-import { parseStendhal, type StendhalBook } from '@quillframe/shared'
+import { GLYPH_KIND, glyphKind, parseStendhal, unifontPart, type StendhalBook } from '@quillframe/shared'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { BookView } from '../book/BookView.tsx'
-import { createBoxGlyphs, createPackGlyphs, loadReferenceGlyphs, type GlyphSource } from '../book/glyphs.ts'
+import {
+  createBoxGlyphs,
+  createPackGlyphs,
+  loadReferenceGlyphs,
+  loadUnifont,
+  type GlyphSource,
+} from '../book/glyphs.ts'
 import { en, format } from '../strings/en.ts'
 import { Button } from '../ui/Button.tsx'
 import styles from './BookViewerScreen.module.css'
@@ -24,6 +30,18 @@ const FONT_LABELS: Record<FontMode, string> = {
   pack: en.viewer.packFont,
   reference: en.viewer.referenceFont,
   boxes: en.viewer.boxFont,
+}
+
+/** O livro usa caracteres do arquivo grande da Unifont (CJK, hangul...)? */
+function needsUnifontExtra(book: StendhalBook | null): boolean {
+  if (!book) return false
+  for (const page of book.pages) {
+    for (const ch of page) {
+      const cp = ch.codePointAt(0) ?? 0
+      if (glyphKind(cp) === GLYPH_KIND.unifont && unifontPart(cp) === 'extra') return true
+    }
+  }
+  return false
 }
 
 async function loadBackground(): Promise<HTMLImageElement | null> {
@@ -53,12 +71,22 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
     if (!import.meta.env.DEV) return
     void import('../dev/sampleBooks.ts').then((module) => setSamples(module.sampleBooks))
     void Promise.all([loadReferenceGlyphs(), loadBackground()]).then(([glyphs, background]) => {
-      if (!glyphs) return
-      setReference({ glyphs, background })
-      // Emojis e símbolos da Unifont: no desenvolvimento, vêm do pacote de referência
-      setPack(createPackGlyphs(glyphs))
+      if (glyphs) setReference({ glyphs, background })
     })
   }, [])
+
+  // Emojis e símbolos vêm do recorte da Unifont do projeto; o arquivo grande, só se o livro usar
+  const extra = needsUnifontExtra(book)
+  useEffect(() => {
+    let current = true
+    loadUnifont(extra ? ['common', 'extra'] : ['common']).then(
+      () => current && setPack(createPackGlyphs()),
+      (cause: unknown) => console.error(cause),
+    )
+    return () => {
+      current = false
+    }
+  }, [extra])
 
   const open = (text: string) => {
     try {
@@ -130,7 +158,7 @@ export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerS
               <BookView book={book} glyphs={glyphs} background={background} scale={guiScale} />
             </>
           )}
-          {!reference && <p className={styles.hint}>{en.viewer.noReference}</p>}
+          {import.meta.env.DEV && !reference && <p className={styles.hint}>{en.viewer.noReference}</p>}
         </section>
       </div>
     </div>

@@ -38,7 +38,7 @@ export const en = {
     referenceFont: 'Font: Game reference (local only)',
     boxFont: 'Font: Glyph boxes',
     noReference:
-      'Emojis and symbols outside the quillframe font show as boxes. To see them and compare with the game font locally, run "pnpm reference-pack" with Minecraft installed.',
+      'To compare with the game font locally, run "pnpm reference-pack" with Minecraft installed.',
     fileError: "Couldn't open this file: {message}",
     overflow: 'This page has more than 14 lines. Lines after 14 are hidden, like in the game.',
     tooManyPages: "This book has more than 100 pages and can't be imported into the game.",

@@ -18,6 +18,8 @@
     "format:check": "prettier --check .",
     "font:metrics": "node scripts/extract-font-metrics.mjs",
     "font:specimen": "node scripts/font-specimen.mjs",
+    "font:unifont": "node scripts/unifont-subset.mjs",
+    "font:web": "node scripts/font-web.mjs",
     "reference-pack": "node scripts/reference-pack.mjs"
   },
   "devDependencies": {

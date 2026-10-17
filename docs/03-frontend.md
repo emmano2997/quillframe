@@ -737,7 +737,7 @@ Alinhado às fases do documento 02, §9.
 
 | Fase | Front-end |
 |---|---|
-| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor. **Feito em 15/10/2026**: renderer e "Book Viewer" com o pacote de referência local, botão no estilo do jogo, escala de GUI. **Pendente**: a arte da fonte própria e o WOFF2, que dependem do desenho dos glifos |
+| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor. **Feito em 15/10/2026**: renderer e "Book Viewer" com o pacote de referência local, botão no estilo do jogo, escala de GUI. **Depois**: fonte própria, recorte da GNU Unifont e WOFF2 da interface (documento 05) |
 | Fase 1 · Contas | Title Screen, cadastro, login, verificação, reset de senha, Options básico |
 | Fase 2 · Livros | editor completo, My Books, assinatura, importar/exportar, autosave e modo offline |
 | Fase 3 · Social | leitor completo (Play, índice, busca), Community, perfis, amigos, notificações |

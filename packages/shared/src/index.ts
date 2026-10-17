@@ -29,6 +29,17 @@ export {
   type PixelGlyph,
 } from './font/pixel-font.ts'
 export {
+  decodeUnifontSubset,
+  encodeUnifontSubset,
+  parseUnihex,
+  UNIFONT_ROWS,
+  UNIFONT_SIZE_OVERRIDES,
+  unifontAdvance,
+  unifontPart,
+  type UnifontGlyph,
+  type UnifontPart,
+} from './font/unifont.ts'
+export {
   editorLines,
   fitsInGamePage,
   readerLines,

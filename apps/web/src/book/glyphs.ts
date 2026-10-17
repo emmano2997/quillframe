@@ -1,9 +1,23 @@
 // De onde vêm os desenhos dos glifos:
-// - a fonte pixel do projeto (assets/pack/font, documento 05), que é a fonte do site;
+// - a fonte pixel do projeto (assets/pack/font, documento 05), que é a fonte do site, com o recorte
+//   da GNU Unifont para emojis e símbolos;
 // - o pacote de referência local, com a fonte do jogo (só em desenvolvimento, para comparar);
 // - "caixas" do tamanho de cada glifo, que mostram o layout sem arte nenhuma.
-import { GLYPH_KIND, glyphAdvance, glyphKind, parsePixelFont, type PixelGlyph } from '@quillframe/shared'
+import {
+  decodeUnifontSubset,
+  GLYPH_KIND,
+  glyphAdvance,
+  glyphKind,
+  parsePixelFont,
+  parseUnihex,
+  UNIFONT_ROWS,
+  type PixelGlyph,
+  type UnifontGlyph,
+  type UnifontPart,
+} from '@quillframe/shared'
 import packFontText from '../../../../assets/pack/font/quillframe-font.txt?raw'
+import unifontCommonUrl from '../../../../assets/pack/font/unifont-common.bin?url'
+import unifontExtraUrl from '../../../../assets/pack/font/unifont-extra.bin?url'
 
 /** Pixels do canvas por pixel de GUI: 2, para a meia escala da Unifont e o negrito de 0,5 px */
 export const INTERNAL_SCALE = 2
@@ -83,11 +97,71 @@ function pixelGlyphMask(glyph: PixelGlyph): GlyphMask {
   return { image, top: glyph.top * S }
 }
 
+/** Meia escala: 1 pixel da Unifont = 0,5 pixel de GUI = 1 pixel do canvas */
+function unifontGlyphMask(glyph: UnifontGlyph): GlyphMask | null {
+  const { left, right } = glyph
+  const image = createCanvas(right - left + 1, UNIFONT_ROWS)
+  const ctx = image.getContext('2d')
+  if (!ctx) return null
+  ctx.fillStyle = '#fff'
+  glyph.rows.forEach((row, y) => {
+    for (let column = left; column <= right && column < 32; column++) {
+      if ((row >>> (31 - column)) & 1) ctx.fillRect(column - left, y, 1, 1)
+    }
+  })
+  return { image, top: 0 }
+}
+
+// Recorte da GNU Unifont do projeto (pnpm font:unifont), carregado sob demanda
+const UNIFONT_URLS: Record<UnifontPart, string> = { common: unifontCommonUrl, extra: unifontExtraUrl }
+const unifontLoads = new Map<UnifontPart, Promise<void>>()
+const unifontGlyphs = new Map<number, UnifontGlyph>()
+
+/** Carrega partes do recorte da Unifont; `createPackGlyphs()` passa a usá-las */
+export function loadUnifont(parts: readonly UnifontPart[] = ['common']): Promise<void> {
+  return Promise.all(
+    parts.map((part) => {
+      let load = unifontLoads.get(part)
+      if (!load) {
+        load = fetch(UNIFONT_URLS[part])
+          .then((response) => {
+            if (!response.ok || !response.body) throw new Error(`Unifont ${part}: HTTP ${response.status}`)
+            return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+          })
+          .then((buffer) => {
+            for (const [cp, glyph] of decodeUnifontSubset(new Uint8Array(buffer)))
+              unifontGlyphs.set(cp, glyph)
+          })
+        load.catch(() => unifontLoads.delete(part))
+        unifontLoads.set(part, load)
+      }
+      return load
+    }),
+  ).then(() => undefined)
+}
+
+/** Os glifos da Unifont já carregados por `loadUnifont` */
+export function createUnifontGlyphs(): GlyphSource {
+  const boxes = createBoxGlyphs()
+  const cache = new Map<number, GlyphMask | null>()
+  return {
+    kind: 'pack',
+    mask(codePoint) {
+      const glyph = unifontGlyphs.get(codePoint)
+      if (!glyph) return boxes.mask(codePoint)
+      if (!cache.has(codePoint)) cache.set(codePoint, unifontGlyphMask(glyph))
+      return cache.get(codePoint) ?? null
+    },
+    randomSameWidth: (codePoint) => codePoint,
+  }
+}
+
 /**
- * A fonte do projeto. Os caracteres que o jogo tira da Unifont (emojis, ✮, ☼...) vêm de
- * `unifont`, quando houver; o que não tem desenho vira caixa, sem mudar o layout.
+ * A fonte do projeto. Os caracteres que o jogo tira da Unifont (emojis, ✮, ☼...) vêm de `unifont`:
+ * por padrão, o recorte da GNU Unifont do projeto (o que `loadUnifont` já carregou). O que não tem
+ * desenho vira caixa, sem mudar o layout.
  */
-export function createPackGlyphs(unifont: GlyphSource | null = null): GlyphSource {
+export function createPackGlyphs(unifont: GlyphSource | null = createUnifontGlyphs()): GlyphSource {
   const font = parsePixelFont(packFontText)
   const boxes = createBoxGlyphs()
   const cache = new Map<number, GlyphMask | null>()
@@ -213,22 +287,9 @@ export async function loadReferenceGlyphs(base = '/reference-pack'): Promise<Gly
   const unihexMask = (codePoint: number): GlyphMask | null => {
     const hex = unihex?.rows.get(codePoint)
     const bounds = unihex?.bounds[codePoint]
-    if (!hex || !bounds) return null
-    const [left, right] = bounds
-    const bitWidth = hex.length / 4
-    const digits = bitWidth / 4
-    // Meia escala: 1 pixel da Unifont = 0,5 pixel de GUI = 1 pixel do canvas
-    const image = createCanvas(right - left + 1, 16)
-    const ctx = image.getContext('2d')
-    if (!ctx) return null
-    ctx.fillStyle = '#fff'
-    for (let row = 0; row < 16; row++) {
-      const value = parseInt(hex.slice(row * digits, (row + 1) * digits), 16)
-      for (let column = left; column <= right && column < bitWidth; column++) {
-        if ((value >> (bitWidth - 1 - column)) & 1) ctx.fillRect(column - left, row, 1, 1)
-      }
-    }
-    return { image, top: 0 }
+    const glyph = hex ? parseUnihex(codePoint, hex) : null
+    if (!glyph || !bounds) return null
+    return unifontGlyphMask({ ...glyph, left: bounds[0], right: bounds[1] })
   }
 
   return {
