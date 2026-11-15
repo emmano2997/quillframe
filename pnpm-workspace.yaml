@@ -7,4 +7,7 @@ packages:
 minimumReleaseAge: 4320
 
 # Dependências que podem rodar scripts de instalação. Qualquer outra é bloqueada.
-onlyBuiltDependencies: []
+onlyBuiltDependencies:
+  - argon2
+  - prisma
+  - "@prisma/engines"
