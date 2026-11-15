@@ -1,0 +1,225 @@
+/* Editor (documento 03, §5.1): painéis laterais em telas largas; acima e abaixo do livro nas menores. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--gui));
+  min-height: 100%;
+  padding-bottom: calc(4 * var(--gui));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--gui));
+  padding: calc(3 * var(--gui)) calc(4 * var(--gui));
+  background: var(--panel);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(200 * var(--gui));
+}
+
+.saveState {
+  flex: 1;
+  margin: 0;
+  text-align: right;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: calc(6 * var(--gui));
+  align-items: start;
+  padding: 0 calc(4 * var(--gui));
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--gui));
+  width: 100%;
+  max-width: calc(120 * var(--gui));
+  padding: calc(4 * var(--gui));
+  background: var(--panel);
+  border: var(--gui) solid #000;
+}
+
+.side:first-child {
+  justify-self: end;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(3 * var(--gui));
+}
+
+.bookRow {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(4 * var(--gui));
+}
+
+.colors {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: calc(2 * var(--gui));
+}
+
+.color {
+  height: calc(16 * var(--gui));
+  min-width: calc(16 * var(--gui));
+  padding: 0;
+  border: var(--gui) solid #000;
+  box-shadow: inset 0 0 0 var(--gui) rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+}
+
+.color:hover,
+.color:focus-visible,
+.colorActive {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(2 * var(--gui));
+}
+
+.tool {
+  min-width: 0;
+  padding: 0 calc(2 * var(--gui));
+}
+
+/* No modo Visual a <textarea> existe e recebe o teclado, mas não aparece: o livro é o canvas */
+.hiddenInput {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.textarea {
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  font-size: 16px;
+  color: transparent;
+  background: transparent;
+  border: 0;
+  outline: none;
+  resize: none;
+  opacity: 0;
+}
+
+.rawPanel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--gui));
+  width: calc(160 * var(--gui));
+  max-width: 100%;
+}
+
+.raw {
+  min-height: calc(160 * var(--gui));
+  white-space: pre-wrap;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(4 * var(--gui));
+  padding: 0 calc(4 * var(--gui));
+}
+
+.shortcuts {
+  width: 100%;
+  border-collapse: collapse;
+  text-shadow: none;
+}
+
+.shortcuts th,
+.shortcuts td {
+  padding: calc(2 * var(--gui));
+  font-weight: normal;
+  text-align: left;
+}
+
+.shortcuts th {
+  color: var(--splash);
+  white-space: nowrap;
+}
+
+.mobileHint {
+  display: none;
+}
+
+.symbols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(16 * var(--gui)), 1fr));
+  gap: calc(1 * var(--gui));
+  max-height: calc(120 * var(--gui));
+  overflow: auto;
+}
+
+.symbol {
+  height: calc(16 * var(--gui));
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  background: #000;
+  border: var(--gui) solid #555;
+  cursor: pointer;
+}
+
+.symbol:hover,
+.symbol:focus-visible {
+  border-color: var(--focus);
+  outline: none;
+}
+
+@media (max-width: 1023px) {
+  .layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .side,
+  .side:first-child {
+    justify-self: center;
+    max-width: calc(240 * var(--gui));
+  }
+
+  .center {
+    order: -1;
+  }
+
+  .tools {
+    grid-template-columns: repeat(auto-fill, minmax(calc(70 * var(--gui)), 1fr));
+  }
+
+  .colors {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .mobileHint {
+    display: block;
+  }
+
+  .saveState {
+    display: none;
+  }
+}

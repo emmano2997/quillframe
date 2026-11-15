@@ -1,5 +1,13 @@
 @import './tokens.css';
 
+/* Fonte pixel própria (documento 05), gerada de assets/pack/font/quillframe-font.txt por pnpm font:web.
+   8 pixels por em: fica nítida em tamanhos múltiplos de 8 pixels de GUI. */
+@font-face {
+  font-family: quillframe;
+  src: url('../../../../assets/pack/font/quillframe.woff2') format('woff2');
+  font-display: block;
+}
+
 *,
 *::before,
 *::after {
@@ -28,8 +36,8 @@ body {
     0 calc(8 * var(--gui)),
     calc(8 * var(--gui)) calc(-8 * var(--gui)),
     calc(-8 * var(--gui)) 0;
-  /* A fonte pixel própria ainda não existe (documento 03, F5); até lá, a do sistema */
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  /* Caracteres fora da fonte pixel (documento 05, §2) caem na do sistema */
+  font-family: var(--font-ui);
   font-size: calc(8 * var(--gui));
   line-height: 1.25;
   text-shadow: var(--gui) var(--gui) 0 var(--text-shadow);
@@ -59,4 +67,59 @@ body {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Botão de "pedra" com bisel, arte própria inspirada nos menus do jogo (documento 03, §2.2).
+   Classe global porque links também podem ter cara de botão. */
+.qf-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(20 * var(--gui));
+  min-width: calc(98 * var(--gui));
+  padding: 0 calc(6 * var(--gui));
+  font: inherit;
+  color: var(--text);
+  text-decoration: none;
+  text-shadow: var(--gui) var(--gui) 0 var(--text-shadow);
+  background: linear-gradient(var(--button-top), var(--button-bottom));
+  border: var(--gui) solid #000;
+  box-shadow:
+    inset var(--gui) var(--gui) 0 var(--button-light),
+    inset calc(-1 * var(--gui)) calc(-2 * var(--gui)) 0 var(--button-dark);
+  cursor: pointer;
+}
+
+.qf-button-wide {
+  min-width: min(calc(200 * var(--gui)), 100%);
+}
+
+.qf-button:hover:not(:disabled),
+.qf-button:focus-visible {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.qf-button:disabled {
+  color: var(--text-muted);
+  text-shadow: none;
+  background: var(--button-disabled);
+  box-shadow: none;
+  cursor: default;
+}
+
+/* "Readable Font" (documento 03, §12): a interface usa a fonte do sistema; o livro continua em pixel */
+:root[data-readable-font] {
+  --font-ui: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root[data-reduce-motion] *,
+:root[data-reduce-motion] *::before,
+:root[data-reduce-motion] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+a {
+  color: #aaaaff;
 }

@@ -1,0 +1,468 @@
+// Modelo de dados do quillframe (documento 02, §2).
+// CHECKs, o trigger do livro assinado e os índices de busca ficam no SQL das migrations (§2.5).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_DELETION
+}
+
+enum BookStatus {
+  DRAFT
+  SIGNED
+}
+
+enum Visibility {
+  PRIVATE
+  FRIENDS
+  PUBLIC
+}
+
+enum ReviewState {
+  NONE
+  PENDING_REVIEW
+  HIDDEN
+  REMOVED
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+enum FriendRequestPolicy {
+  EVERYONE
+  FRIENDS_OF_FRIENDS
+  NOBODY
+}
+
+enum TokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  EMAIL_CHANGE
+}
+
+enum OAuthProvider {
+  GOOGLE
+  DISCORD
+}
+
+enum ReportTarget {
+  BOOK
+  USER
+}
+
+enum ReportReason {
+  SEXUAL_CONTENT
+  MINOR_SAFETY
+  UNDERAGE_USER
+  HATE
+  HARASSMENT
+  VIOLENCE
+  SELF_HARM
+  PERSONAL_INFO
+  SPAM
+  COPYRIGHT
+  IMPERSONATION
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  ACTIONED
+  DISMISSED
+}
+
+enum ModActionType {
+  DISMISS
+  HIDE
+  RESTORE
+  REMOVE
+  WARN
+  STRIKE
+  SUSPEND
+  BAN
+  UNBAN
+}
+
+enum AppealStatus {
+  OPEN
+  UPHELD
+  REVERSED
+}
+
+enum FilterSeverity {
+  HIGH
+  MEDIUM
+}
+
+model User {
+  id                  String              @id @default(uuid()) @db.Uuid
+  username            String              @unique @db.VarChar(16)
+  usernameLower       String              @unique @db.VarChar(16)
+  email               String              @unique @db.VarChar(254)
+  emailVerifiedAt     DateTime?
+  passwordHash        String?
+  pepperVersion       Int?
+  birthDate           DateTime            @db.Date
+  role                Role                @default(USER)
+  status              AccountStatus       @default(ACTIVE)
+  suspendedUntil      DateTime?
+  avatarId            Int                 @default(0)
+  bio                 String?             @db.VarChar(160)
+  // Privacidade (documento 02, §7.3). Para 16–17 anos a API ignora estes valores e usa os protegidos.
+  searchable          Boolean             @default(true)
+  showFavorites       Boolean             @default(false)
+  friendRequestPolicy FriendRequestPolicy @default(EVERYONE)
+  termsVersion        String
+  termsAcceptedAt     DateTime
+  deletionRequestedAt DateTime?
+  lastDataExportAt    DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  sessions      Session[]
+  pendingLogins PendingLogin[]
+  oauthAccounts OAuthAccount[]
+  emailTokens   EmailToken[]
+  totp          TotpCredential?
+  recoveryCodes RecoveryCode[]
+  books         Book[]
+  copies        BookCopy[]
+  favorites     Favorite[]
+  likes         Like[]
+  comments      Comment[]
+  friendshipsA  Friendship[]     @relation("friendA")
+  friendshipsB  Friendship[]     @relation("friendB")
+  blocksMade    Block[]          @relation("blocker")
+  blocksGot     Block[]          @relation("blocked")
+  reports       Report[]
+  strikes       Strike[]
+  appeals       Appeal[]
+  notifications Notification[]
+}
+
+model Session {
+  id            String    @id // SHA-256 do token; o token só existe no cookie
+  userId        String    @db.Uuid
+  createdAt     DateTime  @default(now())
+  lastSeenAt    DateTime  @default(now())
+  idleExpiresAt DateTime
+  expiresAt     DateTime
+  reauthAt      DateTime?
+  ip            String?
+  userAgent     String?   @db.VarChar(256)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PendingLogin {
+  id        String   @id // SHA-256 do token do cookie __Host-qf_mfa
+  userId    String   @db.Uuid
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Identidade nova vinda do Google/Discord, esperando o onboarding (username, idade, termos).
+model PendingOAuth {
+  id             String        @id // SHA-256 do token do cookie __Host-qf_oauth
+  provider       OAuthProvider
+  providerUserId String
+  email          String        @db.VarChar(254)
+  expiresAt      DateTime
+}
+
+model OAuthAccount {
+  provider       OAuthProvider
+  providerUserId String
+  userId         String        @db.Uuid
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerUserId])
+  @@unique([userId, provider])
+}
+
+model EmailToken {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  purpose   TokenPurpose
+  tokenHash String       @unique
+  newEmail  String?      @db.VarChar(254)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+model TotpCredential {
+  userId       String    @id @db.Uuid
+  secretEnc    Bytes // AES-256-GCM: iv + texto cifrado + tag
+  keyVersion   Int
+  lastUsedStep BigInt    @default(0)
+  enabledAt    DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RecoveryCode {
+  id       String    @id @default(uuid()) @db.Uuid
+  userId   String    @db.Uuid
+  codeHash String
+  usedAt   DateTime?
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Book {
+  id            String      @id @default(uuid()) @db.Uuid
+  ownerId       String      @db.Uuid
+  title         String      @default("") @db.VarChar(64)
+  status        BookStatus  @default(DRAFT)
+  visibility    Visibility  @default(PRIVATE)
+  reviewState   ReviewState @default(NONE)
+  /// O filtro automático acusou algo: o livro entra na fila de moderação (documento 02, §6.2)
+  filterFlag    FilterSeverity?
+  allowCopies   Boolean     @default(true)
+  allowComments Boolean     @default(true)
+  pageCount     Int         @default(1)
+  version       Int         @default(0)
+  likeCount     Int         @default(0)
+  favoriteCount Int         @default(0)
+  signedAt      DateTime?
+  publishedAt   DateTime?
+  deletedAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  owner         User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  pages         Page[]
+  copies        BookCopy[]
+  favorites     Favorite[]
+  likes         Like[]
+  comments      Comment[]
+
+  @@index([ownerId, updatedAt])
+  @@index([visibility, reviewState, publishedAt])
+}
+
+model Page {
+  bookId  String @db.Uuid
+  index   Int
+  content String @default("")
+  book    Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, index])
+}
+
+model BookCopy {
+  id           String   @id @default(uuid()) @db.Uuid
+  ownerId      String   @db.Uuid
+  sourceBookId String   @db.Uuid
+  generation   Int
+  createdAt    DateTime @default(now())
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  source       Book     @relation(fields: [sourceBookId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerId, sourceBookId, generation])
+}
+
+model Favorite {
+  userId    String   @db.Uuid
+  bookId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+}
+
+model Like {
+  userId    String   @db.Uuid
+  bookId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+  @@index([bookId, createdAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid()) @db.Uuid
+  bookId    String   @db.Uuid
+  authorId  String   @db.Uuid
+  presetId  Int
+  createdAt DateTime @default(now())
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, authorId, presetId])
+}
+
+model Friendship {
+  userAId     String           @db.Uuid
+  userBId     String           @db.Uuid
+  requestedBy String           @db.Uuid
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  acceptedAt  DateTime?
+  userA       User             @relation("friendA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User             @relation("friendB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@id([userAId, userBId])
+  @@index([userBId])
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now())
+  blocker   User     @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Report {
+  id         String            @id @default(uuid()) @db.Uuid
+  reporterId String            @db.Uuid
+  targetType ReportTarget
+  targetId   String            @db.Uuid
+  pageIndex  Int?
+  reason     ReportReason
+  details    String?           @db.VarChar(500)
+  status     ReportStatus      @default(OPEN)
+  badFaith   Boolean           @default(false)
+  actionId   String?           @db.Uuid
+  createdAt  DateTime          @default(now())
+  resolvedAt DateTime?
+  reporter   User              @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  action     ModerationAction? @relation(fields: [actionId], references: [id], onDelete: SetNull)
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([status, reason, createdAt])
+  @@index([targetType, targetId])
+}
+
+model ModerationAction {
+  id          String        @id @default(uuid()) @db.Uuid
+  moderatorId String?       @db.Uuid // null = ação automática
+  targetType  ReportTarget
+  targetId    String        @db.Uuid
+  /// Usuário afetado: o dono do livro ou o próprio alvo. É quem pode recorrer.
+  subjectId   String        @db.Uuid
+  type        ModActionType
+  guideline   String?
+  reason      String        @db.VarChar(1000)
+  automated   Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  reports     Report[]
+  strike      Strike?
+  appeal      Appeal?
+
+  @@index([subjectId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model Strike {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  actionId  String           @unique @db.Uuid
+  expiresAt DateTime
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    ModerationAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Appeal {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @db.Uuid
+  actionId       String           @unique @db.Uuid
+  message        String           @db.VarChar(1000)
+  status         AppealStatus     @default(OPEN)
+  reviewerId     String?          @db.Uuid
+  decisionReason String?          @db.VarChar(1000)
+  createdAt      DateTime         @default(now())
+  decidedAt      DateTime?
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         ModerationAction @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+}
+
+model ConcernNotice {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @db.VarChar(120)
+  email       String       @db.VarChar(254)
+  relation    String       @db.VarChar(40)
+  contentUrl  String       @db.VarChar(300)
+  description String       @db.VarChar(2000)
+  tokenHash   String       @unique
+  confirmedAt DateTime?
+  status      ReportStatus @default(OPEN)
+  createdAt   DateTime     @default(now())
+
+  @@index([status, confirmedAt])
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  type      String    @db.VarChar(40)
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  actorId   String?  @db.Uuid
+  event     String   @db.VarChar(40)
+  targetId  String?
+  ip        String?
+  userAgent String?  @db.VarChar(256)
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([event, createdAt])
+}
+
+/// Termos do filtro de conteúdo. Ficam no banco, fora do repositório (documento 02, §6.2).
+model FilterTerm {
+  term      String         @id @db.VarChar(64) // já normalizado
+  severity  FilterSeverity
+  createdAt DateTime       @default(now())
+}
+
+/// Usernames de contas excluídas, reservados por 90 dias (documento 02, §7.5).
+model ReservedUsername {
+  usernameLower String   @id @db.VarChar(16)
+  until         DateTime
+}

@@ -1,0 +1,55 @@
+name: Backup
+
+# Backup diário (documento 02, §5.13): pg_dump criptografado com age e guardado num bucket privado
+# por 30 dias. A chave pública fica numa variável do repositório; a privada fica offline, com o
+# responsável. O dump nunca vira artifact do repositório.
+on:
+  schedule:
+    - cron: '47 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    if: ${{ vars.BACKUP_ENABLED == 'true' }}
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_SECRET_ACCESS_KEY }}
+      BACKUP_ENDPOINT: ${{ vars.BACKUP_ENDPOINT }}
+      BACKUP_BUCKET: ${{ vars.BACKUP_BUCKET }}
+    steps:
+      - name: Instalar age e o cliente do Postgres 18
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update
+          sudo apt-get install -y age postgresql-client-18
+      - name: Dump criptografado
+        run: |
+          set -euo pipefail
+          file="quillframe-$(date -u +%Y-%m-%d).sql.gz.age"
+          /usr/lib/postgresql/18/bin/pg_dump --no-owner --no-privileges "$DATABASE_URL" | gzip | age -r "$AGE_RECIPIENT" > "$file"
+          # Um dump vazio ou truncado não pode passar por backup
+          test "$(stat -c %s "$file")" -gt 1024
+          aws s3 cp "$file" "s3://$BACKUP_BUCKET/$file" --endpoint-url "$BACKUP_ENDPOINT"
+      - name: Apagar backups com mais de 30 dias
+        run: |
+          set -euo pipefail
+          limit=$(date -u -d '30 days ago' +%Y-%m-%d)
+          aws s3 ls "s3://$BACKUP_BUCKET/" --endpoint-url "$BACKUP_ENDPOINT" | awk '{print $4}' | while read -r name; do
+            case "$name" in
+              quillframe-*.sql.gz.age) ;;
+              *) continue ;;
+            esac
+            day=${name#quillframe-}
+            day=${day%.sql.gz.age}
+            if [[ "$day" < "$limit" ]]; then
+              aws s3 rm "s3://$BACKUP_BUCKET/$name" --endpoint-url "$BACKUP_ENDPOINT"
+            fi
+          done

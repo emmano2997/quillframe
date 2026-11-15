@@ -1,0 +1,536 @@
+/* Componentes no estilo dos menus do jogo (documento 03, §2.2). Toda medida é múltipla de --gui. */
+
+.screen {
+  display: grid;
+  /* Sem isto a coluna cresce com o conteúdo e a tela ganha rolagem horizontal no celular */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  min-height: 100%;
+}
+
+.skip {
+  position: absolute;
+  left: calc(2 * var(--gui));
+  top: calc(-40 * var(--gui));
+  padding: calc(2 * var(--gui)) calc(4 * var(--gui));
+  color: var(--text);
+  background: #000;
+}
+
+.skip:focus {
+  top: calc(2 * var(--gui));
+  z-index: 30;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--gui));
+  padding: calc(3 * var(--gui)) calc(4 * var(--gui));
+  background: var(--panel);
+}
+
+.topTitle {
+  flex: 1;
+  margin: 0;
+  overflow: hidden;
+  font-size: inherit;
+  font-weight: normal;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--gui));
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4 * var(--gui));
+  width: 100%;
+  max-width: calc(340 * var(--gui));
+  margin: 0 auto;
+  padding: calc(6 * var(--gui)) calc(4 * var(--gui));
+}
+
+.mainWide {
+  max-width: calc(480 * var(--gui));
+}
+
+.footer {
+  padding: calc(2 * var(--gui)) calc(4 * var(--gui));
+  color: var(--text-muted);
+  text-align: center;
+  text-shadow: none;
+}
+
+.footer a {
+  color: inherit;
+}
+
+.offline {
+  padding: calc(2 * var(--gui));
+  color: #000;
+  text-align: center;
+  text-shadow: none;
+  background: var(--splash);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--gui));
+  width: 100%;
+  padding: calc(5 * var(--gui));
+  background: var(--panel);
+  border: var(--gui) solid #000;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: inherit;
+  font-weight: normal;
+  color: var(--splash);
+}
+
+.heading {
+  margin: 0;
+  font-size: calc(16 * var(--gui));
+  font-weight: normal;
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3 * var(--gui));
+}
+
+.rowStart {
+  justify-content: flex-start;
+}
+
+.rowBetween {
+  justify-content: space-between;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--gui));
+  width: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--gui));
+  width: 100%;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1 * var(--gui));
+}
+
+.label {
+  color: var(--text-muted);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-height: calc(20 * var(--gui));
+  padding: calc(2 * var(--gui)) calc(4 * var(--gui));
+  font: inherit;
+  color: var(--text);
+  text-shadow: none;
+  background: #000;
+  border: var(--gui) solid #a0a0a0;
+  border-radius: 0;
+}
+
+.textarea {
+  min-height: calc(60 * var(--gui));
+  resize: vertical;
+}
+
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.input[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: #ff5555;
+}
+
+.inputRow {
+  display: flex;
+  gap: calc(2 * var(--gui));
+}
+
+.inputRow .input {
+  flex: 1;
+  min-width: 0;
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-muted);
+  text-shadow: none;
+}
+
+.error {
+  margin: 0;
+  color: #ff5555;
+}
+
+.success {
+  margin: 0;
+  color: #55ff55;
+}
+
+.warning {
+  margin: 0;
+  color: var(--splash);
+}
+
+.muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.center {
+  text-align: center;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(3 * var(--gui));
+  cursor: pointer;
+}
+
+.check input {
+  flex: none;
+  width: calc(10 * var(--gui));
+  height: calc(10 * var(--gui));
+  margin: 0;
+  appearance: none;
+  background: #000;
+  border: var(--gui) solid #a0a0a0;
+  cursor: pointer;
+}
+
+.check input[type='radio'] {
+  border-radius: 50%;
+}
+
+.check input:checked {
+  background: #fff;
+  box-shadow: inset 0 0 0 calc(2 * var(--gui)) #000;
+}
+
+.check input:focus-visible {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.check input:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(2 * var(--gui));
+}
+
+.tab {
+  min-width: calc(60 * var(--gui));
+}
+
+.tabActive {
+  border-color: var(--focus);
+  background: linear-gradient(#6f8fbf, #4a6a9a);
+}
+
+.small {
+  min-width: calc(20 * var(--gui));
+}
+
+.danger {
+  background: linear-gradient(#b85a5a, #8a3a3a);
+}
+
+.linkButton {
+  padding: 0;
+  font: inherit;
+  color: #aaaaff;
+  text-decoration: underline;
+  text-shadow: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.link {
+  color: #aaaaff;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--panel);
+  border: var(--gui) solid #000;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--gui));
+  width: 100%;
+  padding: calc(3 * var(--gui)) calc(4 * var(--gui));
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-shadow: inherit;
+  background: none;
+  border: var(--gui) solid transparent;
+}
+
+button.item,
+a.item {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.item:hover,
+a.item:hover,
+.item:focus-visible {
+  border-color: #808080;
+  outline: none;
+}
+
+.itemSelected {
+  border-color: var(--focus) !important;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemMeta {
+  margin: 0;
+  color: var(--text-muted);
+  text-shadow: none;
+}
+
+.badge {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.badgeAlert {
+  color: var(--splash);
+}
+
+.avatar {
+  flex: none;
+  width: calc(16 * var(--gui));
+  height: calc(16 * var(--gui));
+  image-rendering: pixelated;
+  border: var(--gui) solid #000;
+}
+
+.avatarLarge {
+  width: calc(32 * var(--gui));
+  height: calc(32 * var(--gui));
+}
+
+.bookIcon {
+  flex: none;
+  width: calc(16 * var(--gui));
+  height: calc(16 * var(--gui));
+  image-rendering: pixelated;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(4 * var(--gui));
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--gui));
+  width: 100%;
+  max-width: calc(260 * var(--gui));
+  max-height: 100%;
+  padding: calc(6 * var(--gui));
+  overflow: auto;
+  background: #1d1712;
+  border: var(--gui) solid #000;
+  box-shadow: 0 0 0 var(--gui) #808080;
+}
+
+.dialogTitle {
+  margin: 0;
+  font-size: inherit;
+  font-weight: normal;
+  text-align: center;
+}
+
+.toasts {
+  position: fixed;
+  top: calc(4 * var(--gui));
+  right: calc(4 * var(--gui));
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--gui));
+  max-width: calc(160 * var(--gui));
+}
+
+.toast {
+  padding: calc(4 * var(--gui)) calc(6 * var(--gui));
+  font: inherit;
+  color: var(--splash);
+  text-align: left;
+  background: #212121;
+  border: var(--gui) solid #000;
+  box-shadow: inset 0 0 0 var(--gui) #555;
+  cursor: pointer;
+}
+
+.toastError {
+  color: #ff5555;
+}
+
+.menu {
+  position: relative;
+}
+
+.menuList {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: calc(1 * var(--gui));
+  min-width: calc(100 * var(--gui));
+  margin: calc(1 * var(--gui)) 0 0;
+  padding: calc(2 * var(--gui));
+  list-style: none;
+  background: #1d1712;
+  border: var(--gui) solid #000;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(100 * var(--gui)), 1fr));
+  gap: calc(3 * var(--gui));
+  width: 100%;
+}
+
+.prose {
+  width: 100%;
+  line-height: 1.5;
+  text-shadow: none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  margin: calc(8 * var(--gui)) 0 calc(3 * var(--gui));
+  font-size: inherit;
+  font-weight: normal;
+  color: var(--splash);
+}
+
+.prose h1 {
+  font-size: calc(16 * var(--gui));
+  color: var(--text);
+}
+
+.prose p,
+.prose ul {
+  margin: 0 0 calc(4 * var(--gui));
+}
+
+.prose a {
+  color: #aaaaff;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose th,
+.prose td {
+  padding: calc(2 * var(--gui));
+  text-align: left;
+  vertical-align: top;
+  border: var(--gui) solid #555;
+}
+
+.pre {
+  margin: 0;
+  padding: calc(3 * var(--gui));
+  overflow: auto;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-shadow: none;
+  background: #000;
+}
+
+.readable {
+  font-family: system-ui, sans-serif;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: calc(4 * var(--gui)) calc(2 * var(--gui));
+  }
+}

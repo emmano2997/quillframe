@@ -15,17 +15,34 @@ Editor e leitor web de livros no estilo do livro e pena do Minecraft (com os rec
 
 ## Como rodar
 
-Requisitos: **Node.js 24** e **pnpm 10** (`npm install -g pnpm@10`). Docker só a partir da Fase 1 (banco de dados).
+Requisitos: **Node.js 24**, **pnpm 10** (`corepack enable` ou `npm install -g pnpm@10`) e **Docker** (Postgres, Redis e Mailpit).
 
 ```sh
-pnpm install          # instala as dependências
-pnpm test             # testes (motor de texto, livros de exemplo, API)
-pnpm dev:web          # site em http://localhost:5173
-pnpm dev:api          # API em http://127.0.0.1:3000 (copie .env.example para .env antes)
-pnpm lint             # ESLint
-pnpm typecheck        # TypeScript
+pnpm install          # instala as dependências e gera o cliente do Prisma
+pnpm setup:env        # cria o .env e gera os segredos locais (nunca troca um valor que já existe)
+docker compose up -d  # Postgres, Redis e Mailpit (e-mails em http://127.0.0.1:8025)
+pnpm db:migrate       # cria as tabelas
+pnpm db:seed          # opcional: contas de teste de cada papel e os livros de exemplo
+pnpm dev:api          # API em http://127.0.0.1:3000
+pnpm dev:web          # site em http://localhost:5173 (com proxy de /api para a API)
 ```
 
+O seed mostra no terminal os e-mails das contas, a senha e o segredo 2FA das contas da equipe. Eles só valem no banco local.
+
+Checagens (as mesmas do CI):
+
+```sh
+pnpm db:test:create   # uma vez: cria o banco quillframe_test usado pelos testes da API
+pnpm test             # motor de texto, livros de exemplo, editor e API (integração com o Postgres)
+pnpm lint             # ESLint
+pnpm format:check     # Prettier
+pnpm typecheck        # TypeScript
+pnpm build            # build do site (apps/web/dist)
+```
+
+Para servir o site pela própria API, na mesma origem, como em produção: `pnpm build` e suba a API com `WEB_DIST=../web/dist`.
+
+Outros comandos: `pnpm jobs` (jobs diários: limpeza, exclusão de contas, strikes, retenção) e `pnpm secret` (gera um segredo de 32 bytes).
 Com o Minecraft Java instalado, dá para comparar o desenho do site com o do jogo:
 
 ```sh
@@ -43,7 +60,7 @@ pnpm font:specimen    # gera docs/img/fonte-quillframe.png com todos os glifos
 ## Estrutura
 
 ```
-apps/api/          API (Fastify)
+apps/api/          API (Fastify + Prisma + PostgreSQL)
 apps/web/          site (React + Vite)
 packages/shared/   código dos dois lados: códigos §, larguras, quebra de linha, formato .stendhal
 assets/pack/       arte própria do projeto (fonte pixel)

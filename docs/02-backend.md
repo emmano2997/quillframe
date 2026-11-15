@@ -1243,13 +1243,22 @@ Rodam como scripts no GitHub Actions, ligados direto no banco. Não há endpoint
 | Fase | Back-end | Pronta quando |
 |---|---|---|
 | Fase 0 · Fundação | monorepo, CI, Docker Compose, `packages/shared` (parser `§`, quebra de linha, `.stendhal`) | os livros do autor passam pelo parser e pelo layout sem diferença. **Feito em 15/10/2026** com 10 livros (o `links` ficou de fora por ser pessoal); regras conferidas no código do jogo (documento 04) |
-| Fase 1 · Contas | cadastro, verificação, login, sessões, CSRF, rate limit, headers, reset de senha, auditoria | os testes de segurança da seção 5 passam; ZAP sem alertas altos |
-| Fase 2 · Livros | rascunhos, autosave, assinatura, visibilidade, importação e exportação | escrever → assinar → publicar funciona e a matriz de autorização passa |
-| Fase 3 · Social | perfis, amizades, bloqueios, likes, favoritos, comentários, cópias, feed, busca, notificações | os testes de bloqueio e de visibilidade passam |
-| Fase 4 · Moderação | filtro, denúncias, painel, strikes, recursos, canal público | denúncia → decisão → notificação → recurso testado de ponta a ponta |
-| Fase 5 · Segurança avançada | 2FA, step-up, Google, Discord, lista de dispositivos, alertas | moderadores obrigados a usar 2FA |
-| Fase 6 · Lançamento | LGPD (exportação e exclusão), documentos legais, backups, monitoramento | checklist 5.18 completo |
+| Fase 1 · Contas | cadastro, verificação, login, sessões, CSRF, rate limit, headers, reset de senha, auditoria | os testes de segurança da seção 5 passam; ZAP sem alertas altos. **Feito em 15/11/2026** (testes passando; o ZAP só roda com o site publicado) |
+| Fase 2 · Livros | rascunhos, autosave, assinatura, visibilidade, importação e exportação | escrever → assinar → publicar funciona e a matriz de autorização passa. **Feito em 15/11/2026** |
+| Fase 3 · Social | perfis, amizades, bloqueios, likes, favoritos, comentários, cópias, feed, busca, notificações | os testes de bloqueio e de visibilidade passam. **Feito em 15/11/2026** |
+| Fase 4 · Moderação | filtro, denúncias, painel, strikes, recursos, canal público | denúncia → decisão → notificação → recurso testado de ponta a ponta. **Feito em 15/11/2026** |
+| Fase 5 · Segurança avançada | 2FA, step-up, Google, Discord, lista de dispositivos, alertas | moderadores obrigados a usar 2FA. **Feito em 15/11/2026** (Google e Discord testados só com provedor simulado) |
+| Fase 6 · Lançamento | LGPD (exportação e exclusão), documentos legais, backups, monitoramento | checklist 5.18 completo. **Em parte (15/11/2026)**: exportação, exclusão, jobs, `security.txt` e os workflows de backup e ZAP estão escritos; faltam publicar o site, revisar os textos legais e cumprir o checklist |
 | Futuro | passkeys, vínculo com responsável (13–15), busca no texto, tempo real | — |
+
+**Como ficou na implementação (15/11/2026)**
+- TOTP, OAuth (Google e Discord), ZIP da exportação e rate limit foram escritos sobre `node:crypto` e `fetch`, sem `otpauth`, `arctic`, `resend` nem `@fastify/rate-limit`: menos dependências (§5.14). O Redis entra pelo `ioredis`.
+- O Prisma ficou fixo na 7.10.1 (a `latest` do npm é uma 8.0 em release candidate).
+- Rotas além da tabela da §4.2: `GET /api/config`, `GET /api/auth/username-available`, `POST /api/auth/reauth/check`, `PUT /api/books/:id/pages` (troca todas as páginas), `DELETE /api/me/copies/:id`, `GET /api/users/:username/favorites` e `/copies`, `GET /api/mod/targets/:type/:id`, `POST /api/mod/concerns/:id/resolve`, `GET /api/admin/users` e `/api/admin/filter-terms`.
+- Contas suspensas, banidas e em exclusão conseguem entrar em modo restrito: leem os próprios dados, recorrem e exportam, mas não publicam nem interagem (§6.6 e §7.5).
+- O `Book` ganhou `filterFlag` (marca do filtro automático) e o `ModerationAction`, `subjectId` (quem pode recorrer). Há também as tabelas `PendingOAuth`, `FilterTerm` e `ReservedUsername`.
+- Em desenvolvimento, `pnpm dev:api` roda sem `--watch`: no Windows o watcher do Node reiniciava a API no meio de uma requisição. Para o reinício automático, use `pnpm --filter @quillframe/api dev:watch`.
+- Os workflows `jobs.yml`, `backup.yml` e `zap.yml` só rodam quando as variáveis do repositório `JOBS_ENABLED`, `BACKUP_ENABLED` e `ZAP_TARGET_URL` são definidas. Ainda não rodaram nenhuma vez.
 
 ---
 

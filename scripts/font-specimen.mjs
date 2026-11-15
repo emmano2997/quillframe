@@ -1,8 +1,8 @@
 // Gera a amostra da fonte pixel do projeto (docs/img/fonte-quillframe.png, documento 05):
 // a folha com todos os glifos e páginas dos livros de exemplo desenhadas com ela.
 //
-// Os caracteres que o jogo tira da Unifont (emojis, ✮, ☼...) usam a Unifont do pacote de referência
-// local, se existir (pnpm reference-pack); senão viram caixas. O layout é o mesmo nos dois casos.
+// Os caracteres que o jogo tira da Unifont (emojis, ✮, ☼...) usam o recorte da GNU Unifont do projeto
+// (assets/pack/font/unifont-*.bin, pnpm font:unifont).
 //
 // Uso: pnpm font:specimen
 import fs from 'node:fs'
@@ -11,6 +11,7 @@ import zlib from 'node:zlib'
 import {
   BOOK,
   COLORS,
+  decodeUnifontSubset,
   GLYPH_KIND,
   glyphAdvance,
   glyphKind,
@@ -27,21 +28,11 @@ const font = parsePixelFont(fs.readFileSync(path.join(ROOT, 'assets/pack/font/qu
 const S = 4
 const H = S / 2
 
-// ── Unifont do pacote de referência (opcional) ──
+// ── Recorte da Unifont do projeto ──
 const unifont = new Map()
-const referenceDir = path.join(ROOT, '.reference-pack')
-if (fs.existsSync(path.join(referenceDir, 'font.json'))) {
-  const reference = JSON.parse(fs.readFileSync(path.join(referenceDir, 'font.json'), 'utf8'))
-  const provider = reference.providers.find((p) => p.type === 'unihex')
-  if (provider) {
-    for (const line of fs.readFileSync(path.join(referenceDir, provider.file), 'utf8').split('\n')) {
-      const colon = line.indexOf(':')
-      if (colon < 0) continue
-      const cp = parseInt(line.slice(0, colon), 16)
-      const bounds = provider.bounds[cp]
-      if (bounds) unifont.set(cp, { hex: line.slice(colon + 1).trim(), bounds })
-    }
-  }
+for (const part of ['common', 'extra']) {
+  const data = zlib.gunzipSync(fs.readFileSync(path.join(ROOT, `assets/pack/font/unifont-${part}.bin`)))
+  for (const [cp, glyph] of decodeUnifontSubset(data)) unifont.set(cp, glyph)
 }
 
 // ── Imagem RGBA ──
@@ -111,13 +102,11 @@ function drawGlyph(image, codePoint, x, y, color, style = {}) {
     const kind = glyphKind(codePoint)
     const uni = kind === GLYPH_KIND.unifont ? unifont.get(codePoint) : null
     if (uni) {
-      const bitWidth = uni.hex.length / 4
-      const digits = bitWidth / 4
-      const [left, right] = uni.bounds
+      const { left, right } = uni
       for (let row = 0; row < 16; row++) {
-        const value = parseInt(uni.hex.slice(row * digits, (row + 1) * digits), 16)
-        for (let column = left; column <= right; column++) {
-          if ((value >> (bitWidth - 1 - column)) & 1)
+        const value = uni.rows[row]
+        for (let column = left; column <= right && column < 32; column++) {
+          if ((value >>> (31 - column)) & 1)
             fillRect(
               image,
               (x + offset + shear(row / 2)) * S + (column - left) * H,
@@ -229,7 +218,4 @@ samples.forEach(([name, pageIndex], index) => {
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true })
 fs.writeFileSync(OUT, encodePng(image))
-console.log(
-  `Amostra criada em ${path.relative(process.cwd(), OUT)} (${width * S}×${height * S})` +
-    (unifont.size ? '' : ' — sem pacote de referência: emojis e símbolos da Unifont aparecem como caixas'),
-)
+console.log(`Amostra criada em ${path.relative(process.cwd(), OUT)} (${width * S}×${height * S})`)

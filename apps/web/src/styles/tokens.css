@@ -3,6 +3,9 @@
   /* Um "pixel de GUI"; o hook useGuiScale ajusta para 1px, 2px, 3px ou 4px */
   --gui: 2px;
 
+  /* Fonte pixel da interface (documento 03, F5). Tamanhos: múltiplos de 8 × --gui */
+  --font-ui: quillframe, ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
   --text: #ffffff;
   --text-shadow: #3f3f3f;
   --text-muted: #a0a0a0;
