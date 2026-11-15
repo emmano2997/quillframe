@@ -11,7 +11,12 @@ const hasher = new PasswordHasher(new Map([[1, pepperV1]]), 1)
 describe('PasswordHasher (documento 02, §5.2)', () => {
   it('gera Argon2id com os parâmetros mínimos da OWASP', async () => {
     const stored = await hasher.hash('my cat writes books at night')
-    expect(stored.passwordHash).toMatch(/^\$argon2id\$v=19\$m=19456,p=1,t=2\$/)
+    // O argon2 0.45.2 passou a escrever m,t,p (ordem do formato PHC): confere os valores, não a ordem
+    const params = stored.passwordHash
+      .match(/^\$argon2id\$v=19\$([^$]+)\$/)?.[1]
+      ?.split(',')
+      .sort()
+    expect(params).toEqual(['m=19456', 'p=1', 't=2'])
     expect(stored.pepperVersion).toBe(1)
   })
 
