@@ -92,7 +92,13 @@ export default function EditorScreen() {
   }
   return (
     <QueryState loading={query.isLoading} error={query.error} onRetry={() => void query.refetch()}>
-      {query.data && <Editor key={`${query.data.id}:${query.dataUpdatedAt}`} book={query.data} reload={() => void query.refetch()} />}
+      {query.data && (
+        <Editor
+          key={`${query.data.id}:${query.dataUpdatedAt}`}
+          book={query.data}
+          reload={() => void query.refetch()}
+        />
+      )}
     </QueryState>
   )
 }
@@ -134,7 +140,14 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
   pagesRef.current = pages
 
   const [saver] = useState(() => new BookSaver(book.id, book.version ?? 0, pages, setSaveState))
-  useEffect(() => () => saver.dispose(), [saver])
+  useEffect(() => {
+    saver.attach()
+    return () => {
+      // Ao sair da tela, o que estiver pendente ainda é enviado
+      void saver.flush()
+      saver.dispose()
+    }
+  }, [saver])
 
   const text = pages[pageIndex] ?? ''
   const glyphs = useBookGlyphs(pages)
@@ -157,7 +170,8 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
     let current = true
     void loadPending(book.id).then((pending) => {
       if (!current || !pending) return
-      const same = pending.pages.length === book.pages.length && pending.pages.every((page, i) => page === book.pages[i])
+      const same =
+        pending.pages.length === book.pages.length && pending.pages.every((page, i) => page === book.pages[i])
       if (same) {
         void clearPendingBook(book.id)
         return
@@ -178,15 +192,21 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
   }, [book, saver])
 
   const record = useCallback(
-    (index: number) => {
+    (index: number, separate: boolean) => {
       const entry = history.current.get(index) ?? { undo: [], redo: [] }
       history.current.set(index, entry)
       const last = entry.undo.at(-1)
       const now = Date.now()
       const previous = pagesRef.current[index] ?? ''
       // Digitação contínua vira um passo só
-      if (!last || now - last.at > HISTORY_MERGE_MS) {
-        entry.undo.push({ text: previous, selectionStart: selection.start, selectionEnd: selection.end, at: now })
+      // Formatar, colar e limpar são sempre um passo próprio
+      if (separate || !last || now - last.at > HISTORY_MERGE_MS) {
+        entry.undo.push({
+          text: previous,
+          selectionStart: selection.start,
+          selectionEnd: selection.end,
+          at: separate ? 0 : now,
+        })
         if (entry.undo.length > HISTORY_LIMIT) entry.undo.shift()
       } else {
         last.at = now
@@ -198,9 +218,9 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
 
   /** Grava uma alteração da página atual: histórico, estado e autosave. */
   const commit = useCallback(
-    (edit: Edit, options: { history?: boolean } = {}) => {
+    (edit: Edit, options: { separate?: boolean } = {}) => {
       if (edit.text !== pagesRef.current[pageIndex]) {
-        if (options.history !== false) record(pageIndex)
+        record(pageIndex, options.separate === true)
         const next = pagesRef.current.map((page, index) => (index === pageIndex ? edit.text : page))
         setPages(next)
         saver.update(next, pageIndex)
@@ -212,7 +232,7 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
 
   /** Passa a alteração pelos limites da página (1024 caracteres, 14 linhas) antes de gravar. */
   const tryEdit = useCallback(
-    (edit: Edit): boolean => {
+    (edit: Edit, options: { separate?: boolean } = {}): boolean => {
       const fitted = fitChange(text, edit.text, edit.selectionEnd)
       if (fitted.rejected) {
         toast(en.editor.didNotFit, 'error')
@@ -223,9 +243,9 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
       }
       if (fitted.truncated) {
         toast(en.editor.didNotFit, 'error')
-        commit({ text: fitted.text, selectionStart: fitted.caret, selectionEnd: fitted.caret })
+        commit({ text: fitted.text, selectionStart: fitted.caret, selectionEnd: fitted.caret }, options)
       } else {
-        commit({ ...edit, text: fitted.text })
+        commit({ ...edit, text: fitted.text }, options)
       }
       return true
     },
@@ -250,19 +270,19 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
   const focusInput = () => textarea.current?.focus({ preventScroll: true })
 
   const format_ = (code: FormatCode) => {
-    tryEdit(applyFormat(text, selection.start, selection.end, code))
+    tryEdit(applyFormat(text, selection.start, selection.end, code), { separate: true })
     focusInput()
   }
 
   const clearFormat = () => {
-    commit(clearFormatting(text, selection.start, selection.end))
+    commit(clearFormatting(text, selection.start, selection.end), { separate: true })
     focusInput()
   }
 
   const insertText = (value: string) => {
     const next = text.slice(0, selection.start) + value + text.slice(selection.end)
     const caret = selection.start + value.length
-    tryEdit({ text: next, selectionStart: caret, selectionEnd: caret })
+    tryEdit({ text: next, selectionStart: caret, selectionEnd: caret }, { separate: true })
     focusInput()
   }
 
@@ -292,7 +312,11 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
   }
 
   /** Operação que muda a estrutura do livro: salva o pendente, chama a API e só então troca as páginas. */
-  const restructure = async (next: string[], call: (version: number) => Promise<{ version: number }>, index: number) => {
+  const restructure = async (
+    next: string[],
+    call: (version: number) => Promise<{ version: number }>,
+    index: number,
+  ) => {
     setBusy(true)
     try {
       await saver.structural(next, call)
@@ -314,7 +338,11 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
     }
     const index = pageIndex + 1
     const next = [...pages.slice(0, index), '', ...pages.slice(index)]
-    void restructure(next, (version) => api.post(`/api/books/${book.id}/pages`, { index, baseVersion: version }), index)
+    void restructure(
+      next,
+      (version) => api.post(`/api/books/${book.id}/pages`, { index, baseVersion: version }),
+      index,
+    )
   }
 
   const removePage = () => {
@@ -327,7 +355,13 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
       )
     }
     if (text === '') run()
-    else setConfirm({ title: en.editor.removePage, message: en.editor.removePageConfirm, label: en.editor.removePage, run })
+    else
+      setConfirm({
+        title: en.editor.removePage,
+        message: en.editor.removePageConfirm,
+        label: en.editor.removePage,
+        run,
+      })
   }
 
   const replaceAll = (next: string[], newTitle?: string) =>
@@ -374,7 +408,13 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
       commit({ text: fitted.text, selectionStart: fitted.caret, selectionEnd: fitted.caret })
     }
     if (text === '') run()
-    else setConfirm({ title: en.editor.pastePage, message: en.editor.pastePageConfirm, label: en.editor.pastePage, run })
+    else
+      setConfirm({
+        title: en.editor.pastePage,
+        message: en.editor.pastePageConfirm,
+        label: en.editor.pastePage,
+        run,
+      })
   }
 
   const asStendhal = (): string | null => {
@@ -392,7 +432,10 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
     try {
       setImportPreview(parseStendhal(content))
     } catch (cause) {
-      toast(format(en.editor.importError, { message: cause instanceof Error ? cause.message : String(cause) }), 'error')
+      toast(
+        format(en.editor.importError, { message: cause instanceof Error ? cause.message : String(cause) }),
+        'error',
+      )
     }
   }
 
@@ -472,7 +515,11 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
     if (target === null) return
     event.preventDefault()
     if (event.shiftKey) {
-      element.setSelectionRange(Math.min(tail, target), Math.max(tail, target), target < tail ? 'backward' : 'forward')
+      element.setSelectionRange(
+        Math.min(tail, target),
+        Math.max(tail, target),
+        target < tail ? 'backward' : 'forward',
+      )
     } else {
       element.setSelectionRange(target, target)
     }
@@ -501,7 +548,8 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
   }, [focused, layout, mode, selection])
 
   const invalid = countInvalidCodes(text)
-  const charsClass = stats.chars >= LIMITS.pageChars ? ui.error : stats.chars > LIMITS.pageChars * 0.9 ? ui.warning : ui.muted
+  const charsClass =
+    stats.chars >= LIMITS.pageChars ? ui.error : stats.chars > LIMITS.pageChars * 0.9 ? ui.warning : ui.muted
   const toggled = (on: boolean) => cx(styles.tool, on && ui.tabActive)
 
   return (
@@ -520,7 +568,10 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
           onBlur={() => void saveTitle()}
         />
         <p
-          className={cx(styles.saveState, saveState === 'saved' ? ui.muted : saveState === 'saving' ? ui.text : ui.warning)}
+          className={cx(
+            styles.saveState,
+            saveState === 'saved' ? ui.muted : saveState === 'saving' ? ui.text : ui.warning,
+          )}
           aria-live="polite"
         >
           {!online && saveState !== 'conflict' ? en.editor.offline : SAVE_TEXT[saveState]}
@@ -530,7 +581,9 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
         </Button>
       </header>
 
-      {pages.length > LIMITS.gamePages && <p className={cx(ui.warning, ui.center)}>{en.editor.over100Pages}</p>}
+      {pages.length > LIMITS.gamePages && (
+        <p className={cx(ui.warning, ui.center)}>{en.editor.over100Pages}</p>
+      )}
       <p className={cx(ui.muted, ui.center, styles.mobileHint)}>{en.editor.mobileHint}</p>
 
       <div className={styles.layout}>
@@ -553,19 +606,39 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
           </div>
           <h2 className={ui.panelTitle}>{en.editor.styles}</h2>
           <div className={styles.tools}>
-            <Button className={toggled(activeStyle.bold)} aria-pressed={activeStyle.bold} onClick={() => format_('l')}>
+            <Button
+              className={toggled(activeStyle.bold)}
+              aria-pressed={activeStyle.bold}
+              onClick={() => format_('l')}
+            >
               {en.editor.bold}
             </Button>
-            <Button className={toggled(activeStyle.italic)} aria-pressed={activeStyle.italic} onClick={() => format_('o')}>
+            <Button
+              className={toggled(activeStyle.italic)}
+              aria-pressed={activeStyle.italic}
+              onClick={() => format_('o')}
+            >
               {en.editor.italic}
             </Button>
-            <Button className={toggled(activeStyle.underlined)} aria-pressed={activeStyle.underlined} onClick={() => format_('n')}>
+            <Button
+              className={toggled(activeStyle.underlined)}
+              aria-pressed={activeStyle.underlined}
+              onClick={() => format_('n')}
+            >
               {en.editor.underline}
             </Button>
-            <Button className={toggled(activeStyle.strikethrough)} aria-pressed={activeStyle.strikethrough} onClick={() => format_('m')}>
+            <Button
+              className={toggled(activeStyle.strikethrough)}
+              aria-pressed={activeStyle.strikethrough}
+              onClick={() => format_('m')}
+            >
               {en.editor.strikethrough}
             </Button>
-            <Button className={toggled(activeStyle.obfuscated)} aria-pressed={activeStyle.obfuscated} onClick={() => format_('k')}>
+            <Button
+              className={toggled(activeStyle.obfuscated)}
+              aria-pressed={activeStyle.obfuscated}
+              onClick={() => format_('k')}
+            >
               {en.editor.obfuscated}
             </Button>
             <Button className={styles.tool} onClick={() => format_('r')}>
@@ -616,10 +689,17 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
             </div>
           </div>
           <div className={ui.row}>
-            <Button className={ui.small} onClick={() => goToPage(pageIndex - 1)} disabled={pageIndex === 0} aria-label={en.reader.previousPage}>
+            <Button
+              className={ui.small}
+              onClick={() => goToPage(pageIndex - 1)}
+              disabled={pageIndex === 0}
+              aria-label={en.reader.previousPage}
+            >
               {'<'}
             </Button>
-            <p className={ui.text}>{format(en.reader.pageIndicator, { page: pageIndex + 1, total: pages.length })}</p>
+            <p className={ui.text}>
+              {format(en.reader.pageIndicator, { page: pageIndex + 1, total: pages.length })}
+            </p>
             <Button
               className={ui.small}
               onClick={() => goToPage(pageIndex + 1)}
@@ -638,7 +718,9 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
               {format(en.editor.lines, { lines: stats.lines, max: BOOK.maxLines })}
             </span>
           </p>
-          {stats.lines > BOOK.maxLines && <p className={cx(ui.warning, ui.center)}>{en.editor.hiddenLines}</p>}
+          {stats.lines > BOOK.maxLines && (
+            <p className={cx(ui.warning, ui.center)}>{en.editor.hiddenLines}</p>
+          )}
           <Tabs
             label={en.editor.viewMode}
             tabs={[
@@ -676,7 +758,7 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
                   title: en.editor.clearPage,
                   message: en.editor.clearPageConfirm,
                   label: en.editor.clearPage,
-                  run: () => commit({ text: '', selectionStart: 0, selectionEnd: 0 }),
+                  run: () => commit({ text: '', selectionStart: 0, selectionEnd: 0 }, { separate: true }),
                 })
               }
             >
@@ -718,7 +800,14 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
             <Button className={styles.tool} disabled={busy} onClick={() => fileInput.current?.click()}>
               {en.editor.import}
             </Button>
-            <input ref={fileInput} className="sr-only" type="file" accept=".stendhal,.txt" tabIndex={-1} onChange={(event) => void onFile(event)} />
+            <input
+              ref={fileInput}
+              className="sr-only"
+              type="file"
+              accept=".stendhal,.txt"
+              tabIndex={-1}
+              onChange={(event) => void onFile(event)}
+            />
             <Button
               className={styles.tool}
               onClick={() =>
@@ -766,8 +855,15 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
       )}
       {importPreview && (
         <Dialog title={en.editor.importTitle} onClose={() => setImportPreview(null)}>
-          <p className={ui.text}>{format(en.editor.importSummary, { title: importPreview.title || en.editor.untitled, pages: Math.max(1, importPreview.pages.length) })}</p>
-          {importPreview.pages.length > LIMITS.gamePages && <p className={ui.warning}>{en.editor.over100Pages}</p>}
+          <p className={ui.text}>
+            {format(en.editor.importSummary, {
+              title: importPreview.title || en.editor.untitled,
+              pages: Math.max(1, importPreview.pages.length),
+            })}
+          </p>
+          {importPreview.pages.length > LIMITS.gamePages && (
+            <p className={ui.warning}>{en.editor.over100Pages}</p>
+          )}
           <p className={ui.warning}>{en.editor.importReplaces}</p>
           <div className={ui.row}>
             <Button
@@ -788,10 +884,16 @@ function Editor({ book, reload }: { book: BookDetail; reload: () => void }) {
         <Dialog title={en.editor.conflictTitle} onClose={() => undefined}>
           <p className={cx(ui.text, ui.center)}>{en.editor.conflict}</p>
           <div className={ui.row}>
-            <Button onClick={() => void saver.overwrite().catch((cause: unknown) => toast(errorMessage(cause), 'error'))}>
+            <Button
+              onClick={() =>
+                void saver.overwrite().catch((cause: unknown) => toast(errorMessage(cause), 'error'))
+              }
+            >
               {en.editor.useThisVersion}
             </Button>
-            <Button onClick={() => void clearPendingBook(book.id).then(reload)}>{en.editor.loadOtherVersion}</Button>
+            <Button onClick={() => void clearPendingBook(book.id).then(reload)}>
+              {en.editor.loadOtherVersion}
+            </Button>
           </div>
         </Dialog>
       )}

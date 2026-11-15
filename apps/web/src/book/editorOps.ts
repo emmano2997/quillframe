@@ -204,7 +204,8 @@ export function fitChange(previous: string, proposed: string, caret: number): Fi
   // Não parte um par substituto (emoji) ao meio
   const cut = inserted.charCodeAt(low - 1)
   if (low > 0 && cut >= 0xd800 && cut <= 0xdbff) low--
-  if (low === 0) return { text: previous, caret: Math.min(prefix, previous.length), truncated: true, rejected: true }
+  if (low === 0)
+    return { text: previous, caret: Math.min(prefix, previous.length), truncated: true, rejected: true }
   return { text: head + inserted.slice(0, low) + tail, caret: prefix + low, truncated: true, rejected: false }
 }
 
@@ -279,7 +280,12 @@ export function selectionRects(
   return rects
 }
 
-export function pageStats(text: string): { chars: number; lines: number; overChars: boolean; overLines: boolean } {
+export function pageStats(text: string): {
+  chars: number
+  lines: number
+  overChars: boolean
+  overLines: boolean
+} {
   const lines = Math.max(1, layoutPage(text).lines.length)
   return {
     chars: text.length,

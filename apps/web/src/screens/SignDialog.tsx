@@ -71,7 +71,11 @@ export function SignDialog({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    const parsed = signBookSchema.safeParse({ title, visibility, ...(shared ? { acceptGuidelines: guidelines } : {}) })
+    const parsed = signBookSchema.safeParse({
+      title,
+      visibility,
+      ...(shared ? { acceptGuidelines: guidelines } : {}),
+    })
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? en.common.error)
       return

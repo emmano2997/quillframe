@@ -6,7 +6,12 @@ import { useConfig } from '../app/session.ts'
 interface TurnstileApi {
   render: (
     element: HTMLElement,
-    options: { sitekey: string; callback: (token: string) => void; 'expired-callback': () => void; theme: string },
+    options: {
+      sitekey: string
+      callback: (token: string) => void
+      'expired-callback': () => void
+      theme: string
+    },
   ) => string
   remove: (id: string) => void
 }

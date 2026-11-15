@@ -63,3 +63,12 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ ...TEST_ENV, PASSWORD_PEPPER_CURRENT: '2' })).toThrow(/PASSWORD_PEPPER_V2/)
   })
 })
+
+describe('páginas com token no fragmento', () => {
+  it('não enviam Referer para fora', async () => {
+    const response = await app.inject({ method: 'GET', url: '/reset-password' })
+    expect(response.headers['referrer-policy']).toBe('no-referrer')
+    const other = await app.inject({ method: 'GET', url: '/api/health' })
+    expect(other.headers['referrer-policy']).toBe('strict-origin-when-cross-origin')
+  })
+})

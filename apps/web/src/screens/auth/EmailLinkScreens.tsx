@@ -78,11 +78,17 @@ export function ForgotPasswordScreen() {
     setBusy(true)
     setError(null)
     try {
-      await api.post('/api/auth/forgot-password', { email: parsed.data, turnstileToken: captcha ?? '' }, { silent: true })
+      await api.post(
+        '/api/auth/forgot-password',
+        { email: parsed.data, turnstileToken: captcha ?? '' },
+        { silent: true },
+      )
       setSent(true)
     } catch (cause) {
       setError(
-        cause instanceof ApiError && cause.code === 'CAPTCHA_REQUIRED' ? en.auth.captchaNeeded : errorMessage(cause),
+        cause instanceof ApiError && cause.code === 'CAPTCHA_REQUIRED'
+          ? en.auth.captchaNeeded
+          : errorMessage(cause),
       )
     } finally {
       setBusy(false)

@@ -1,0 +1,32 @@
+name: ZAP baseline
+
+# Varredura semanal OWASP ZAP contra o site publicado (documento 02, §8.1): headers, cookies e
+# falhas comuns. É só passiva (não ataca o site). Falha se houver alerta de risco alto.
+on:
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    runs-on: ubuntu-latest
+    if: ${{ vars.ZAP_TARGET_URL != '' }}
+    env:
+      TARGET: ${{ vars.ZAP_TARGET_URL }}
+    steps:
+      - name: Varredura passiva
+        run: |
+          mkdir -p report && chmod 777 report
+          docker run --rm -v "$PWD/report:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$TARGET" -J report.json -I
+      - name: Resumo
+        if: always()
+        run: |
+          jq -r '.site[].alerts[] | "- " + .riskdesc + ": " + .name' report/report.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Falhar com alerta de risco alto
+        run: |
+          high=$(jq '[.site[].alerts[] | select(.riskcode == "3")] | length' report/report.json)
+          echo "Alertas de risco alto: $high"
+          test "$high" -eq 0

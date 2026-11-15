@@ -43,7 +43,8 @@ function describe(item: NotificationItem): { message: string; to: string | null;
       }
     case 'MOD_DECISION': {
       const what = title ? format(en.notifications.modBook, { title }) : en.notifications.modAccount
-      const action = en.notifications.modActions[text(p['type']) as keyof typeof en.notifications.modActions] ?? ''
+      const action =
+        en.notifications.modActions[text(p['type']) as keyof typeof en.notifications.modActions] ?? ''
       const rule = text(p['guideline'])
       return {
         message: `${what} ${action}`.trim(),
@@ -65,13 +66,17 @@ function describe(item: NotificationItem): { message: string; to: string | null;
       }
     case 'REPORT_RESOLVED':
       return {
-        message: p['outcome'] === 'actioned' ? en.notifications.reportActioned : en.notifications.reportDismissed,
+        message:
+          p['outcome'] === 'actioned' ? en.notifications.reportActioned : en.notifications.reportDismissed,
         to: null,
       }
     case 'REPORT_ABUSE_WARNING':
       return { message: en.notifications.reportAbuse, to: '/guidelines' }
     case 'SECURITY_ALERT':
-      return { message: format(en.notifications.newSignIn, { device: text(p['device']) }), to: '/settings/security' }
+      return {
+        message: format(en.notifications.newSignIn, { device: text(p['device']) }),
+        to: '/settings/security',
+      }
     case 'PROTECTIONS_LIFTED':
       return { message: en.notifications.protectionsLifted, to: '/settings/privacy' }
     default:

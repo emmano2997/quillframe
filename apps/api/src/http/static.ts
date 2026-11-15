@@ -7,9 +7,6 @@ import path from 'node:path'
 import type { Config } from '../config.ts'
 import { PROBLEMS } from './problem.ts'
 
-/** Rotas que recebem token no fragmento: nada de Referer para fora (§5.11). */
-const TOKEN_PAGES = ['/verify-email', '/reset-password', '/report-concern']
-
 export async function registerStatic(app: FastifyInstance, config: Config): Promise<void> {
   const notFoundJson = {
     type: 'about:blank',
@@ -44,7 +41,6 @@ export async function registerStatic(app: FastifyInstance, config: Config): Prom
       void reply.code(404).type('application/problem+json').send(notFoundJson)
       return
     }
-    if (TOKEN_PAGES.some((page) => url.startsWith(page))) void reply.header('Referrer-Policy', 'no-referrer')
     void reply.header('Cache-Control', 'no-cache').sendFile('index.html')
   })
 }

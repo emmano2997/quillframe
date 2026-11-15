@@ -8,9 +8,7 @@ import { Dialog, Field, Tabs, ui } from '../ui/kit.tsx'
 import styles from './EditorScreen.module.css'
 
 /** Os mais usados em arte ASCII e nos livros do autor. O "§" entra aqui porque nem todo teclado o tem. */
-const FAVORITES = [
-  ...'§♥♦♣♠★☆✮☼☀☁☂♪♫☺☻✔✘❤→←↑↓░▒▓█▄▀▌▐■□▪▫▲▼◄►●○◆◇║═╔╗╚╝╠╣╦╩╬│─┌┐└┘├┤┬┴┼«»•·°±×÷∞≈≠≤≥',
-]
+const FAVORITES = [...'§♥♦♣♠★☆✮☼☀☁☂♪♫☺☻✔✘❤→←↑↓░▒▓█▄▀▌▐■□▪▫▲▼◄►●○◆◇║═╔╗╚╝╠╣╦╩╬│─┌┐└┘├┤┬┴┼«»•·°±×÷∞≈≠≤≥']
 
 const RECENT_KEY = 'qf.recentSymbols'
 const RECENT_MAX = 32
@@ -18,7 +16,9 @@ const RECENT_MAX = 32
 function loadRecent(): string[] {
   try {
     const saved = JSON.parse(localStorage.getItem(RECENT_KEY) ?? '[]') as unknown
-    return Array.isArray(saved) ? saved.filter((item): item is string => typeof item === 'string').slice(0, RECENT_MAX) : []
+    return Array.isArray(saved)
+      ? saved.filter((item): item is string => typeof item === 'string').slice(0, RECENT_MAX)
+      : []
   } catch {
     return []
   }
@@ -57,7 +57,9 @@ export function SymbolPicker({ onPick, onClose }: { onPick: (symbol: string) => 
     query === ''
       ? source
       : source.filter(
-          (symbol) => symbol.toLowerCase() === query || (symbol.codePointAt(0) ?? 0).toString(16).padStart(4, '0').includes(query),
+          (symbol) =>
+            symbol.toLowerCase() === query ||
+            (symbol.codePointAt(0) ?? 0).toString(16).padStart(4, '0').includes(query),
         )
 
   return (

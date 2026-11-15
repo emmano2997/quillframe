@@ -63,7 +63,12 @@ export default function LibraryScreen() {
   const active = tab === 'copies' ? copies : tab === 'favorites' ? favorites : books
   const rows: Row[] =
     tab === 'copies'
-      ? (copies.data?.items ?? []).map((copy) => ({ key: copy.id, book: copy.book, copyId: copy.id, generation: copy.generation }))
+      ? (copies.data?.items ?? []).map((copy) => ({
+          key: copy.id,
+          book: copy.book,
+          copyId: copy.id,
+          generation: copy.generation,
+        }))
       : tab === 'favorites'
         ? (favorites.data?.items ?? []).map((book) => ({ key: book.id, book }))
         : (books.data?.pages.flatMap((page) => page.items) ?? []).map((book) => ({ key: book.id, book }))
@@ -106,7 +111,10 @@ export default function LibraryScreen() {
     try {
       parseStendhal(content)
     } catch (cause) {
-      toast(format(en.editor.importError, { message: cause instanceof Error ? cause.message : String(cause) }), 'error')
+      toast(
+        format(en.editor.importError, { message: cause instanceof Error ? cause.message : String(cause) }),
+        'error',
+      )
       return
     }
     await run(async () => {
@@ -162,7 +170,9 @@ export default function LibraryScreen() {
                 selected={row.key === selected}
                 onSelect={() => setSelected(row.key)}
                 onOpen={() => open(row)}
-                extra={row.generation ? <span className={ui.badge}>{GENERATION[row.generation]}</span> : undefined}
+                extra={
+                  row.generation ? <span className={ui.badge}>{GENERATION[row.generation]}</span> : undefined
+                }
               />
             ) : (
               // O original saiu do ar: a cópia mostra que não está mais disponível
@@ -195,7 +205,14 @@ export default function LibraryScreen() {
         <Button disabled={busy} onClick={() => fileInput.current?.click()}>
           {en.editor.import}
         </Button>
-        <input ref={fileInput} className="sr-only" type="file" accept=".stendhal,.txt" tabIndex={-1} onChange={(event) => void onFile(event)} />
+        <input
+          ref={fileInput}
+          className="sr-only"
+          type="file"
+          accept=".stendhal,.txt"
+          tabIndex={-1}
+          onChange={(event) => void onFile(event)}
+        />
       </div>
       <div className={ui.row}>
         <Button

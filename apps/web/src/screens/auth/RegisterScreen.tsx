@@ -83,7 +83,11 @@ function useUsernameCheck(username: string): string | null {
 function strength(password: string): { label: string; className: string | undefined } | null {
   const length = passwordLength(password)
   if (length === 0) return null
-  if (length < ACCOUNT.PASSWORD_MIN) return { label: format(en.auth.strengthShort, { missing: ACCOUNT.PASSWORD_MIN - length }), className: ui.error }
+  if (length < ACCOUNT.PASSWORD_MIN)
+    return {
+      label: format(en.auth.strengthShort, { missing: ACCOUNT.PASSWORD_MIN - length }),
+      className: ui.error,
+    }
   const words = password.trim().split(/\s+/).length
   if (length >= 24 || words >= 4) return { label: en.auth.strengthStrong, className: ui.success }
   return { label: en.auth.strengthOk, className: ui.warning }

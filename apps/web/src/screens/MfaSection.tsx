@@ -17,7 +17,10 @@ function QrCode({ value }: { value: string }) {
     qr.addData(value)
     qr.make()
     const size = qr.getModuleCount()
-    return { size, dark: Array.from({ length: size * size }, (_, i) => qr.isDark(Math.floor(i / size), i % size)) }
+    return {
+      size,
+      dark: Array.from({ length: size * size }, (_, i) => qr.isDark(Math.floor(i / size), i % size)),
+    }
   }, [value])
   const quiet = 4
   const total = cells.size + quiet * 2
@@ -33,7 +36,14 @@ function QrCode({ value }: { value: string }) {
       <rect width={total} height={total} fill="#fff" />
       {cells.dark.map((dark, index) =>
         dark ? (
-          <rect key={index} x={(index % cells.size) + quiet} y={Math.floor(index / cells.size) + quiet} width="1" height="1" fill="#000" />
+          <rect
+            key={index}
+            x={(index % cells.size) + quiet}
+            y={Math.floor(index / cells.size) + quiet}
+            width="1"
+            height="1"
+            fill="#000"
+          />
         ) : null,
       )}
     </svg>
@@ -44,7 +54,9 @@ function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () => void 
   const [saved, setSaved] = useState(false)
   const text = codes.join('\n')
   const downloadCodes = () => {
-    const url = URL.createObjectURL(new Blob([`quillframe recovery codes\n\n${text}\n`], { type: 'text/plain' }))
+    const url = URL.createObjectURL(
+      new Blob([`quillframe recovery codes\n\n${text}\n`], { type: 'text/plain' }),
+    )
     const link = document.createElement('a')
     link.href = url
     link.download = 'quillframe-recovery-codes.txt'
@@ -110,7 +122,9 @@ export function MfaSection({ me }: { me: Me }) {
     setError(null)
     try {
       if (action === 'enable') {
-        const result = await api.post<{ recoveryCodes: string[] }>('/api/me/mfa/totp/enable', { code: parsed.data })
+        const result = await api.post<{ recoveryCodes: string[] }>('/api/me/mfa/totp/enable', {
+          code: parsed.data,
+        })
         setSetup(null)
         setCodes(result.recoveryCodes)
       } else {

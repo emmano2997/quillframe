@@ -128,7 +128,9 @@ function AccountSection({ me }: { me: Me }) {
         toast(en.settings.emailChangeSent)
       })
       .catch((cause: unknown) =>
-        setEmailError(cause instanceof ApiError && cause.fields[0] ? cause.fields[0].message : errorMessage(cause)),
+        setEmailError(
+          cause instanceof ApiError && cause.fields[0] ? cause.fields[0].message : errorMessage(cause),
+        ),
       )
   }
 
@@ -170,7 +172,12 @@ function AccountSection({ me }: { me: Me }) {
       </Panel>
       <Panel title={en.auth.email}>
         <p className={ui.text}>
-          {me.email} {me.emailVerified ? <span className={ui.success}>{en.settings.verified}</span> : <span className={ui.warning}>{en.settings.notVerified}</span>}
+          {me.email}{' '}
+          {me.emailVerified ? (
+            <span className={ui.success}>{en.settings.verified}</span>
+          ) : (
+            <span className={ui.warning}>{en.settings.notVerified}</span>
+          )}
         </p>
         <form className={ui.form} onSubmit={changeEmail} noValidate>
           <Field
@@ -202,7 +209,9 @@ function ChangePassword({ me }: { me: Me }) {
     event.preventDefault()
     const parsed = changePasswordSchema.safeParse({ currentPassword: current, newPassword: next })
     if (!parsed.success) {
-      setErrors(Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message])))
+      setErrors(
+        Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message])),
+      )
       return
     }
     setErrors({})
@@ -215,7 +224,11 @@ function ChangePassword({ me }: { me: Me }) {
       })
       .catch((cause: unknown) => {
         const code = cause instanceof ApiError ? cause.code : ''
-        setErrors(code === 'INVALID_CREDENTIALS' ? { currentPassword: errorMessage(cause) } : { newPassword: errorMessage(cause) })
+        setErrors(
+          code === 'INVALID_CREDENTIALS'
+            ? { currentPassword: errorMessage(cause) }
+            : { newPassword: errorMessage(cause) },
+        )
       })
   }
 
@@ -256,7 +269,10 @@ function ChangePassword({ me }: { me: Me }) {
 
 function Sessions() {
   const navigate = useNavigate()
-  const query = useQuery({ queryKey: ['sessions'], queryFn: () => api.get<{ items: SessionItem[] }>('/api/me/sessions') })
+  const query = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => api.get<{ items: SessionItem[] }>('/api/me/sessions'),
+  })
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['sessions'] })
   return (
     <Panel title={en.settings.sessions}>
@@ -266,10 +282,12 @@ function Sessions() {
             <li key={session.id} className={ui.item}>
               <div className={ui.itemBody}>
                 <p className={ui.itemTitle}>
-                  {session.device} {session.current && <span className={ui.success}>{en.settings.thisDevice}</span>}
+                  {session.device}{' '}
+                  {session.current && <span className={ui.success}>{en.settings.thisDevice}</span>}
                 </p>
                 <p className={ui.itemMeta}>
-                  {session.ip ?? ''} · {format(en.settings.lastSeen, { when: formatDateTime(session.lastSeenAt) })}
+                  {session.ip ?? ''} ·{' '}
+                  {format(en.settings.lastSeen, { when: formatDateTime(session.lastSeenAt) })}
                 </p>
               </div>
               <Button
@@ -325,11 +343,19 @@ function ConnectedAccounts() {
   const query = useQuery({
     queryKey: ['oauth'],
     queryFn: () =>
-      api.get<{ items: { provider: 'google' | 'discord'; configured: boolean; linked: boolean; linkedAt: string | null }[] }>('/api/me/oauth'),
+      api.get<{
+        items: {
+          provider: 'google' | 'discord'
+          configured: boolean
+          linked: boolean
+          linkedAt: string | null
+        }[]
+      }>('/api/me/oauth'),
   })
   const notice = OAUTH_NOTICE[params.get('oauth') ?? '']
   const names = { google: 'Google', discord: 'Discord' }
-  if (!config?.oauth.google && !config?.oauth.discord && !query.data?.items.some((item) => item.linked)) return null
+  if (!config?.oauth.google && !config?.oauth.discord && !query.data?.items.some((item) => item.linked))
+    return null
 
   // O vínculo exige confirmação recente: confirma antes de sair para o provedor
   const link = (provider: string) =>
@@ -350,7 +376,9 @@ function ConnectedAccounts() {
                 <div className={ui.itemBody}>
                   <p className={ui.itemTitle}>{names[item.provider]}</p>
                   <p className={ui.itemMeta}>
-                    {item.linked ? format(en.settings.linkedOn, { date: formatDate(item.linkedAt) }) : en.settings.notLinked}
+                    {item.linked
+                      ? format(en.settings.linkedOn, { date: formatDate(item.linkedAt) })
+                      : en.settings.notLinked}
                   </p>
                 </div>
                 {item.linked ? (
@@ -431,7 +459,8 @@ const POLICIES: { value: FriendRequestPolicy; label: string }[] = [
 
 function PrivacySection({ me }: { me: Me }) {
   const { privacy } = me
-  const save = (changes: Partial<Me['privacy']>) => api.patch('/api/me/privacy', changes).then(refreshMe).catch(fail)
+  const save = (changes: Partial<Me['privacy']>) =>
+    api.patch('/api/me/privacy', changes).then(refreshMe).catch(fail)
   return (
     <Panel title={en.settings.sections.privacy}>
       {/* 16–17 anos: proteções ligadas e travadas, com explicação (documento 02, §7.3) */}
@@ -450,7 +479,11 @@ function PrivacySection({ me }: { me: Me }) {
       >
         {en.settings.showFavorites}
       </Check>
-      <Check checked={privacy.searchable} disabled={privacy.locked} onChange={(event) => void save({ searchable: event.target.checked })}>
+      <Check
+        checked={privacy.searchable}
+        disabled={privacy.locked}
+        onChange={(event) => void save({ searchable: event.target.checked })}
+      >
         {en.settings.searchable}
       </Check>
     </Panel>
@@ -474,7 +507,15 @@ function VideoSection() {
 }
 
 /** Botão de ciclo no estilo das opções do jogo ("Sounds: ON"). */
-function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (value: boolean) => void }) {
+function Toggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: boolean
+  onChange: (value: boolean) => void
+}) {
   return (
     <Button wide aria-pressed={value} onClick={() => onChange(!value)}>
       {label}: {value ? en.settings.on : en.settings.off}
@@ -486,8 +527,16 @@ function AccessibilitySection() {
   const prefs = usePreferences()
   return (
     <Panel title={en.settings.sections.accessibility}>
-      <Toggle label={en.settings.readableFont} value={prefs.readableFont} onChange={(readableFont) => prefs.set({ readableFont })} />
-      <Toggle label={en.settings.reduceMotion} value={prefs.reduceMotion} onChange={(reduceMotion) => prefs.set({ reduceMotion })} />
+      <Toggle
+        label={en.settings.readableFont}
+        value={prefs.readableFont}
+        onChange={(readableFont) => prefs.set({ readableFont })}
+      />
+      <Toggle
+        label={en.settings.reduceMotion}
+        value={prefs.reduceMotion}
+        onChange={(reduceMotion) => prefs.set({ reduceMotion })}
+      />
       <Toggle
         label={en.settings.pageTurnAnimation}
         value={prefs.pageTurnAnimation}
@@ -514,7 +563,11 @@ function SoundSection() {
           onPointerUp={() => playClick()}
         />
       </label>
-      <Toggle label={en.settings.interfaceSounds} value={prefs.interfaceSounds} onChange={(interfaceSounds) => prefs.set({ interfaceSounds })} />
+      <Toggle
+        label={en.settings.interfaceSounds}
+        value={prefs.interfaceSounds}
+        onChange={(interfaceSounds) => prefs.set({ interfaceSounds })}
+      />
       <Toggle
         label={en.settings.bookSounds}
         value={prefs.bookSounds}
@@ -542,7 +595,11 @@ function DataSection({ me }: { me: Me }) {
         toast(en.settings.deletionScheduled)
         void navigate('/')
       })
-      .catch((cause: unknown) => setError(cause instanceof ApiError && cause.fields[0] ? cause.fields[0].message : errorMessage(cause)))
+      .catch((cause: unknown) =>
+        setError(
+          cause instanceof ApiError && cause.fields[0] ? cause.fields[0].message : errorMessage(cause),
+        ),
+      )
   }
 
   return (
@@ -550,7 +607,9 @@ function DataSection({ me }: { me: Me }) {
       <Panel title={en.settings.exportData}>
         <p className={ui.text}>{en.settings.exportHint}</p>
         <div className={cx(ui.row, ui.rowStart)}>
-          <Button onClick={() => void download('/api/me/export', 'quillframe-data.zip').catch(fail)}>{en.settings.exportData}</Button>
+          <Button onClick={() => void download('/api/me/export', 'quillframe-data.zip').catch(fail)}>
+            {en.settings.exportData}
+          </Button>
         </div>
       </Panel>
       <Panel title={en.settings.deleteAccount}>
@@ -594,13 +653,18 @@ function ModerationHistory() {
   })
   const reports = useQuery({
     queryKey: ['moderation', 'reports'],
-    queryFn: () => api.get<{ items: { id: string; targetType: string; reason: string; status: string; createdAt: string }[] }>('/api/me/reports'),
+    queryFn: () =>
+      api.get<{
+        items: { id: string; targetType: string; reason: string; status: string; createdAt: string }[]
+      }>('/api/me/reports'),
   })
   return (
     <>
       <Panel title={en.settings.sections.moderation}>
         <QueryState loading={query.isLoading} error={query.error} onRetry={() => void query.refetch()}>
-          <p className={ui.text}>{format(en.moderation.activeStrikes, { count: query.data?.activeStrikes ?? 0 })}</p>
+          <p className={ui.text}>
+            {format(en.moderation.activeStrikes, { count: query.data?.activeStrikes ?? 0 })}
+          </p>
           {query.data?.items.length === 0 && <p className={ui.muted}>{en.moderation.cleanHistory}</p>}
           <ul className={ui.list}>
             {query.data?.items.map((item) => (
@@ -612,13 +676,17 @@ function ModerationHistory() {
                   </p>
                   {item.guideline && (
                     <p className={ui.itemMeta}>
-                      {format(en.moderation.rule, { rule: GUIDELINES[item.guideline as GuidelineId] ?? item.guideline })}
+                      {format(en.moderation.rule, {
+                        rule: GUIDELINES[item.guideline as GuidelineId] ?? item.guideline,
+                      })}
                     </p>
                   )}
                   <p className={ui.itemMeta}>{format(en.moderation.reason, { reason: item.reason })}</p>
                   <p className={ui.itemMeta}>
                     {item.automated ? en.moderation.automated : en.moderation.byModerator}
-                    {item.strikeExpiresAt ? ` · ${format(en.moderation.strikeExpires, { date: formatDate(item.strikeExpiresAt) })}` : ''}
+                    {item.strikeExpiresAt
+                      ? ` · ${format(en.moderation.strikeExpires, { date: formatDate(item.strikeExpiresAt) })}`
+                      : ''}
                   </p>
                   {item.appeal && (
                     <p className={ui.itemMeta}>
@@ -651,7 +719,8 @@ function ModerationHistory() {
                 <div className={ui.itemBody}>
                   <p className={ui.text}>
                     {en.report.reasons[report.reason as keyof typeof en.report.reasons] ?? report.reason} ·{' '}
-                    {en.moderation.reportStatus[report.status as keyof typeof en.moderation.reportStatus] ?? report.status}
+                    {en.moderation.reportStatus[report.status as keyof typeof en.moderation.reportStatus] ??
+                      report.status}
                   </p>
                   <p className={ui.itemMeta}>{formatDate(report.createdAt)}</p>
                 </div>

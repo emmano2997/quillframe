@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=../../.env src/server.ts",
+    "dev": "node --env-file-if-exists=../../.env src/server.ts",
     "start": "node --env-file-if-exists=../../.env src/server.ts",
     "typecheck": "tsc -p tsconfig.json",
     "postinstall": "prisma generate",
@@ -12,7 +12,8 @@
     "db:migrate": "node --env-file-if-exists=../../.env node_modules/prisma/build/index.js migrate deploy",
     "db:migrate:dev": "node --env-file-if-exists=../../.env node_modules/prisma/build/index.js migrate dev",
     "db:seed": "node --env-file-if-exists=../../.env src/jobs/seed.ts",
-    "jobs": "node --env-file-if-exists=../../.env src/jobs/run.ts"
+    "jobs": "node --env-file-if-exists=../../.env src/jobs/run.ts",
+    "dev:watch": "node --watch --env-file-if-exists=../../.env src/server.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",
@@ -22,7 +23,7 @@
     "@prisma/client": "7.10.1",
     "@quillframe/shared": "workspace:*",
     "argon2": "^0.45.1",
-    "fastify": "^5.12.0",
+    "fastify": "^5.12.8",
     "ioredis": "^6.0.0",
     "zod": "^4.6.7"
   },

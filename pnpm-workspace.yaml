@@ -10,4 +10,4 @@ minimumReleaseAge: 4320
 onlyBuiltDependencies:
   - argon2
   - prisma
-  - "@prisma/engines"
+  - '@prisma/engines'

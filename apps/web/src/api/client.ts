@@ -17,7 +17,8 @@ export class ApiError extends Error {
   readonly retryAfter: number | null
 
   constructor(status: number, body: Record<string, unknown>, retryAfter: number | null = null) {
-    const detail = typeof body['detail'] === 'string' ? body['detail'] : 'Something went wrong. Please try again.'
+    const detail =
+      typeof body['detail'] === 'string' ? body['detail'] : 'Something went wrong. Please try again.'
     super(detail)
     this.status = status
     this.code = typeof body['code'] === 'string' ? body['code'] : 'INTERNAL'
@@ -129,10 +130,14 @@ export async function request<T>(
 
 export const api = {
   get: <T>(path: string, options?: RequestOptions) => request<T>('GET', path, undefined, options),
-  post: <T>(path: string, body: unknown = {}, options?: RequestOptions) => request<T>('POST', path, body, options),
-  put: <T>(path: string, body: unknown = {}, options?: RequestOptions) => request<T>('PUT', path, body, options),
-  patch: <T>(path: string, body: unknown = {}, options?: RequestOptions) => request<T>('PATCH', path, body, options),
-  delete: <T>(path: string, body?: unknown, options?: RequestOptions) => request<T>('DELETE', path, body, options),
+  post: <T>(path: string, body: unknown = {}, options?: RequestOptions) =>
+    request<T>('POST', path, body, options),
+  put: <T>(path: string, body: unknown = {}, options?: RequestOptions) =>
+    request<T>('PUT', path, body, options),
+  patch: <T>(path: string, body: unknown = {}, options?: RequestOptions) =>
+    request<T>('PATCH', path, body, options),
+  delete: <T>(path: string, body?: unknown, options?: RequestOptions) =>
+    request<T>('DELETE', path, body, options),
 }
 
 /** Mensagem para a tela a partir de qualquer erro. Nunca mostra stack trace. */
@@ -144,7 +149,9 @@ export function errorMessage(error: unknown): string {
     }
     return error.detail
   }
-  return navigator.onLine ? 'Something went wrong. Please try again.' : "You're offline. Please check your connection."
+  return navigator.onLine
+    ? 'Something went wrong. Please try again.'
+    : "You're offline. Please check your connection."
 }
 
 /** Baixa a resposta de um GET como arquivo (exportação .stendhal e ZIP dos dados). */

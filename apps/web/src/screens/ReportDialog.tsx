@@ -1,5 +1,12 @@
 // Denunciar um livro ou um usuário, e recorrer de uma decisão (documento 03, §10.1 e §10.3).
-import { appealSchema, MODERATION, REPORT_REASON_KEYS, REPORT_REASONS, reportSchema, type ReportReason } from '@quillframe/shared'
+import {
+  appealSchema,
+  MODERATION,
+  REPORT_REASON_KEYS,
+  REPORT_REASONS,
+  reportSchema,
+  type ReportReason,
+} from '@quillframe/shared'
 import { useState, type FormEvent } from 'react'
 import { api, errorMessage } from '../api/client.ts'
 import { queryClient } from '../app/session.ts'
@@ -22,7 +29,9 @@ export function ReportDialog({
   pageCount?: number
   onClose: () => void
 }) {
-  const reasons = REPORT_REASON_KEYS.filter((key) => (REPORT_REASONS[key].targets as readonly string[]).includes(targetType))
+  const reasons = REPORT_REASON_KEYS.filter((key) =>
+    (REPORT_REASONS[key].targets as readonly string[]).includes(targetType),
+  )
   const [reason, setReason] = useState<ReportReason | null>(null)
   const [page, setPage] = useState(pageIndex === undefined ? '' : String(pageIndex + 1))
   const [details, setDetails] = useState('')
@@ -36,7 +45,9 @@ export function ReportDialog({
       targetType,
       targetId,
       reason,
-      ...(targetType === 'BOOK' && page !== '' && Number.isInteger(pageNumber) ? { pageIndex: pageNumber - 1 } : {}),
+      ...(targetType === 'BOOK' && page !== '' && Number.isInteger(pageNumber)
+        ? { pageIndex: pageNumber - 1 }
+        : {}),
       ...(details.trim() ? { details } : {}),
     })
     if (!parsed.success) {

@@ -72,7 +72,12 @@ export interface BookDetail extends BookSummary {
   allowComments: boolean
   version?: number
   pages: string[]
-  viewer: { isOwner: boolean; liked: boolean; favorited: boolean; copies: { id: string; generation: number }[] }
+  viewer: {
+    isOwner: boolean
+    liked: boolean
+    favorited: boolean
+    copies: { id: string; generation: number }[]
+  }
   moderation: BookModeration | null
 }
 

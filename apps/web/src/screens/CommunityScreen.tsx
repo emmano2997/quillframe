@@ -59,13 +59,16 @@ export default function CommunityScreen() {
     enabled: !searching && (tab !== 'friends' || Boolean(me)),
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
-      api.get<Paged<BookSummary>>(`/api/feed?tab=${tab}&limit=20${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`),
+      api.get<Paged<BookSummary>>(
+        `/api/feed?tab=${tab}&limit=20${pageParam ? `&cursor=${encodeURIComponent(pageParam)}` : ''}`,
+      ),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
   const results = useQuery({
     queryKey: ['search', term],
     enabled: searching,
-    queryFn: () => api.get<{ books: BookSummary[]; users: UserCard[] }>(`/api/search?q=${encodeURIComponent(term)}`),
+    queryFn: () =>
+      api.get<{ books: BookSummary[]; users: UserCard[] }>(`/api/search?q=${encodeURIComponent(term)}`),
   })
   const books = feed.data?.pages.flatMap((page) => page.items) ?? []
 
@@ -81,15 +84,28 @@ export default function CommunityScreen() {
       {searching ? (
         <QueryState loading={results.isLoading} error={results.error} onRetry={() => void results.refetch()}>
           <Panel title={en.community.books}>
-            {results.data?.books.length ? <BookList books={results.data.books} /> : <p className={ui.muted}>{en.community.noBooks}</p>}
+            {results.data?.books.length ? (
+              <BookList books={results.data.books} />
+            ) : (
+              <p className={ui.muted}>{en.community.noBooks}</p>
+            )}
           </Panel>
           <Panel title={en.community.users}>
-            {results.data?.users.length ? <UserList users={results.data.users} /> : <p className={ui.muted}>{en.community.noUsers}</p>}
+            {results.data?.users.length ? (
+              <UserList users={results.data.users} />
+            ) : (
+              <p className={ui.muted}>{en.community.noUsers}</p>
+            )}
           </Panel>
         </QueryState>
       ) : (
         <>
-          <Tabs label={en.title.community} tabs={TABS} value={tab} onChange={(next) => setParams({ tab: next }, { replace: true })} />
+          <Tabs
+            label={en.title.community}
+            tabs={TABS}
+            value={tab}
+            onChange={(next) => setParams({ tab: next }, { replace: true })}
+          />
           {tab === 'friends' && !me ? (
             <p className={ui.muted}>
               <Link to="/login?returnTo=%2Fcommunity%3Ftab%3Dfriends">{en.community.signInForFriends}</Link>

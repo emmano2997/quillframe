@@ -19,7 +19,10 @@ export default function ProfileScreen() {
   const { username = '' } = useParams()
   const { data: me } = useMe()
   const key = ['profile', username.toLowerCase()]
-  const profile = useQuery({ queryKey: key, queryFn: () => api.get<Profile>(`/api/users/${encodeURIComponent(username)}`) })
+  const profile = useQuery({
+    queryKey: key,
+    queryFn: () => api.get<Profile>(`/api/users/${encodeURIComponent(username)}`),
+  })
   const [tab, setTab] = useState<Tab>('books')
   const [dialog, setDialog] = useState<'report' | 'block' | null>(null)
   const [busy, setBusy] = useState(false)
@@ -30,7 +33,9 @@ export default function ProfileScreen() {
     enabled: Boolean(user) && tab === 'books',
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
-      api.get<Paged<BookSummary>>(`/api/users/${username}/books?limit=20${pageParam ? `&cursor=${pageParam}` : ''}`),
+      api.get<Paged<BookSummary>>(
+        `/api/users/${username}/books?limit=20${pageParam ? `&cursor=${pageParam}` : ''}`,
+      ),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
   const favorites = useQuery({
@@ -94,7 +99,9 @@ export default function ProfileScreen() {
                     <p className={ui.text}>{user.username}</p>
                     <p className={ui.muted}>
                       {format(en.profile.memberSince, { date: formatDate(user.memberSince) })} ·{' '}
-                      {format(user.bookCount === 1 ? en.profile.oneBook : en.profile.bookCount, { count: user.bookCount })}
+                      {format(user.bookCount === 1 ? en.profile.oneBook : en.profile.bookCount, {
+                        count: user.bookCount,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -104,26 +111,42 @@ export default function ProfileScreen() {
                   {user.relation === 'none' && (
                     <Button
                       disabled={busy}
-                      onClick={() => void act(() => api.post('/api/friend-requests', { username: user.username }), en.profile.requestSent)}
+                      onClick={() =>
+                        void act(
+                          () => api.post('/api/friend-requests', { username: user.username }),
+                          en.profile.requestSent,
+                        )
+                      }
                     >
                       {en.profile.addFriend}
                     </Button>
                   )}
                   {user.relation === 'request_sent' && (
-                    <Button disabled={busy} onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}>
+                    <Button
+                      disabled={busy}
+                      onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}
+                    >
                       {en.profile.cancelRequest}
                     </Button>
                   )}
                   {user.relation === 'request_received' && (
                     <Button
                       disabled={busy}
-                      onClick={() => void act(() => api.post(`/api/friend-requests/${user.id}/accept`), en.profile.nowFriends)}
+                      onClick={() =>
+                        void act(
+                          () => api.post(`/api/friend-requests/${user.id}/accept`),
+                          en.profile.nowFriends,
+                        )
+                      }
                     >
                       {en.profile.acceptRequest}
                     </Button>
                   )}
                   {user.relation === 'friends' && (
-                    <Button disabled={busy} onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}>
+                    <Button
+                      disabled={busy}
+                      onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}
+                    >
                       {en.profile.removeFriend}
                     </Button>
                   )}
@@ -152,14 +175,18 @@ export default function ProfileScreen() {
                 )}
               </QueryState>
 
-              {dialog === 'report' && <ReportDialog targetType="USER" targetId={user.id} onClose={() => setDialog(null)} />}
+              {dialog === 'report' && (
+                <ReportDialog targetType="USER" targetId={user.id} onClose={() => setDialog(null)} />
+              )}
               {dialog === 'block' && (
                 <Confirm
                   title={format(en.profile.blockTitle, { username: user.username })}
                   message={en.profile.blockConfirm}
                   confirmLabel={en.profile.block}
                   danger
-                  onConfirm={() => void act(() => api.put(`/api/blocks/${user.username}`), en.profile.blocked)}
+                  onConfirm={() =>
+                    void act(() => api.put(`/api/blocks/${user.username}`), en.profile.blocked)
+                  }
                   onClose={() => setDialog(null)}
                 />
               )}

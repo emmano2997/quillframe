@@ -39,7 +39,8 @@ import {
 type Tab = 'queue' | 'appeals' | 'concerns' | 'audit' | 'users' | 'filter'
 const fail = (cause: unknown) => toast(errorMessage(cause), 'error')
 const reasonLabel = (reason: string) => en.report.reasons[reason as keyof typeof en.report.reasons] ?? reason
-const actionLabel = (type: string) => en.moderation.actions[type as keyof typeof en.moderation.actions] ?? type
+const actionLabel = (type: string) =>
+  en.moderation.actions[type as keyof typeof en.moderation.actions] ?? type
 
 export default function ModerationScreen() {
   const { data: me } = useMe()
@@ -77,7 +78,12 @@ export default function ModerationScreen() {
   const tab = tabs.find((item) => item.id === search.get('tab'))?.id ?? 'queue'
   return (
     <Screen title={en.nav.moderation} back="/" wide>
-      <Tabs label={en.nav.moderation} tabs={tabs} value={tab} onChange={(next) => setSearch({ tab: next }, { replace: true })} />
+      <Tabs
+        label={en.nav.moderation}
+        tabs={tabs}
+        value={tab}
+        onChange={(next) => setSearch({ tab: next }, { replace: true })}
+      />
       {tab === 'queue' && <Queue />}
       {tab === 'appeals' && <Appeals />}
       {tab === 'concerns' && <Concerns />}
@@ -90,8 +96,13 @@ export default function ModerationScreen() {
 
 function Queue() {
   const [filter, setFilter] = useState('all')
-  const query = useQuery({ queryKey: ['mod', 'queue'], queryFn: () => api.get<{ items: QueueEntry[] }>('/api/mod/queue') })
-  const items = (query.data?.items ?? []).filter((item) => filter === 'all' || String(item.priority) === filter)
+  const query = useQuery({
+    queryKey: ['mod', 'queue'],
+    queryFn: () => api.get<{ items: QueueEntry[] }>('/api/mod/queue'),
+  })
+  const items = (query.data?.items ?? []).filter(
+    (item) => filter === 'all' || String(item.priority) === filter,
+  )
   return (
     <>
       <Select
@@ -100,7 +111,10 @@ function Queue() {
         onChange={(event) => setFilter(event.target.value)}
         options={[
           { value: 'all', label: en.mod.allPriorities },
-          ...[1, 2, 3, 4].map((priority) => ({ value: String(priority), label: format(en.mod.priority, { priority }) })),
+          ...[1, 2, 3, 4].map((priority) => ({
+            value: String(priority),
+            label: format(en.mod.priority, { priority }),
+          })),
         ]}
       />
       <QueryState
@@ -116,15 +130,22 @@ function Queue() {
               <Link className={ui.item} to={`/mod/${item.targetType.toLowerCase()}/${item.targetId}`}>
                 <div className={ui.itemBody}>
                   <p className={ui.itemTitle}>
-                    {format(en.mod.priority, { priority: item.priority })} · {item.label || en.editor.untitled}
+                    {format(en.mod.priority, { priority: item.priority })} ·{' '}
+                    {item.label || en.editor.untitled}
                     {item.owner ? ` — ${item.owner}` : ''}
                   </p>
                   <p className={ui.itemMeta}>
-                    {item.reasons.map(reasonLabel).join(', ')} · {format(en.mod.reportCount, { count: item.reportCount })} ·{' '}
+                    {item.reasons.map(reasonLabel).join(', ')} ·{' '}
+                    {format(en.mod.reportCount, { count: item.reportCount })} ·{' '}
                     {format(en.mod.waiting, { when: formatRelative(item.oldest) })}
                   </p>
                 </div>
-                <span className={cx(ui.badge, item.reviewState !== 'NONE' && item.reviewState !== 'ACTIVE' && ui.badgeAlert)}>
+                <span
+                  className={cx(
+                    ui.badge,
+                    item.reviewState !== 'NONE' && item.reviewState !== 'ACTIVE' && ui.badgeAlert,
+                  )}
+                >
                   {item.targetType === 'BOOK' ? en.mod.book : en.mod.user} · {item.reviewState}
                 </span>
               </Link>
@@ -141,7 +162,10 @@ const USER_ACTIONS: ModActionType[] = ['DISMISS', 'WARN', 'STRIKE', 'SUSPEND']
 
 function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; role: Role }) {
   const key = ['mod', 'target', type, id]
-  const query = useQuery({ queryKey: key, queryFn: () => api.get<TargetDetail>(`/api/mod/targets/${type}/${id}`) })
+  const query = useQuery({
+    queryKey: key,
+    queryFn: () => api.get<TargetDetail>(`/api/mod/targets/${type}/${id}`),
+  })
   const [action, setAction] = useState<ModActionType>('DISMISS')
   const [guideline, setGuideline] = useState<GuidelineId | ''>('')
   const [reason, setReason] = useState('')
@@ -150,7 +174,10 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const detail = query.data
-  const actions = [...(type === 'book' ? BOOK_ACTIONS : USER_ACTIONS), ...(role === 'ADMIN' ? (['BAN', 'UNBAN'] as const) : [])]
+  const actions = [
+    ...(type === 'book' ? BOOK_ACTIONS : USER_ACTIONS),
+    ...(role === 'ADMIN' ? (['BAN', 'UNBAN'] as const) : []),
+  ]
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
@@ -206,8 +233,8 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
 
             <Panel title={en.mod.author}>
               <p className={ui.text}>
-                <Link to={`/u/${detail.subject.username}`}>{detail.subject.username}</Link> · {detail.subject.role} ·{' '}
-                {detail.subject.status}
+                <Link to={`/u/${detail.subject.username}`}>{detail.subject.username}</Link> ·{' '}
+                {detail.subject.role} · {detail.subject.status}
                 {detail.subject.suspendedUntil ? ` (${formatDate(detail.subject.suspendedUntil)})` : ''}
               </p>
               <p className={ui.muted}>
@@ -241,7 +268,10 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
                       <div className={ui.itemBody}>
                         <p className={ui.text}>
                           {reasonLabel(report.reason)}
-                          {report.pageIndex !== null ? ` · ${format(en.mod.page, { page: report.pageIndex + 1 })}` : ''} · {report.status}
+                          {report.pageIndex !== null
+                            ? ` · ${format(en.mod.page, { page: report.pageIndex + 1 })}`
+                            : ''}{' '}
+                          · {report.status}
                         </p>
                         {/* Os detalhes são texto do usuário: aparecem como texto, nunca como HTML */}
                         {report.details && <p className={ui.text}>{report.details}</p>}
@@ -269,11 +299,21 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
                     label={en.mod.guideline}
                     value={guideline}
                     onChange={(event) => setGuideline(event.target.value as GuidelineId | '')}
-                    options={[{ value: '', label: en.mod.chooseGuideline }, ...GUIDELINE_IDS.map((item) => ({ value: item, label: GUIDELINES[item] }))]}
+                    options={[
+                      { value: '', label: en.mod.chooseGuideline },
+                      ...GUIDELINE_IDS.map((item) => ({ value: item, label: GUIDELINES[item] })),
+                    ]}
                   />
                 )}
                 {action === 'SUSPEND' && (
-                  <Field label={en.mod.days} type="number" min={1} max={365} value={days} onChange={(event) => setDays(event.target.value)} />
+                  <Field
+                    label={en.mod.days}
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={days}
+                    onChange={(event) => setDays(event.target.value)}
+                  />
                 )}
                 {action === 'DISMISS' && (
                   <Check checked={badFaith} onChange={(event) => setBadFaith(event.target.checked)}>
@@ -289,7 +329,13 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
                   error={error ?? undefined}
                 />
                 <div className={cx(ui.row, ui.rowStart)}>
-                  <Button type="submit" disabled={busy} className={['REMOVE', 'STRIKE', 'SUSPEND', 'BAN'].includes(action) ? ui.danger : undefined}>
+                  <Button
+                    type="submit"
+                    disabled={busy}
+                    className={
+                      ['REMOVE', 'STRIKE', 'SUSPEND', 'BAN'].includes(action) ? ui.danger : undefined
+                    }
+                  >
                     {actionLabel(action)}
                   </Button>
                 </div>
@@ -303,7 +349,10 @@ function TargetScreen({ type, id, role }: { type: 'book' | 'user'; id: string; r
 }
 
 function Appeals() {
-  const query = useQuery({ queryKey: ['mod', 'appeals'], queryFn: () => api.get<{ items: AppealItem[] }>('/api/mod/appeals') })
+  const query = useQuery({
+    queryKey: ['mod', 'appeals'],
+    queryFn: () => api.get<{ items: AppealItem[] }>('/api/mod/appeals'),
+  })
   const [reasons, setReasons] = useState<Record<string, string>>({})
 
   const decide = (appeal: AppealItem, status: 'UPHELD' | 'REVERSED') => {
@@ -331,12 +380,16 @@ function Appeals() {
           <p className={ui.muted}>
             {actionLabel(appeal.action.type)} · {formatDate(appeal.action.createdAt)} ·{' '}
             {appeal.action.automated ? en.moderation.automated : en.moderation.byModerator}
-            {appeal.action.guideline ? ` · ${GUIDELINES[appeal.action.guideline as GuidelineId] ?? appeal.action.guideline}` : ''}
+            {appeal.action.guideline
+              ? ` · ${GUIDELINES[appeal.action.guideline as GuidelineId] ?? appeal.action.guideline}`
+              : ''}
           </p>
           <p className={ui.muted}>{format(en.moderation.reason, { reason: appeal.action.reason })}</p>
           <p className={ui.text}>{appeal.message}</p>
           <div className={cx(ui.row, ui.rowStart)}>
-            <ButtonLink to={`/mod/${appeal.action.targetType.toLowerCase()}/${appeal.action.targetId}`}>{en.mod.openTarget}</ButtonLink>
+            <ButtonLink to={`/mod/${appeal.action.targetType.toLowerCase()}/${appeal.action.targetId}`}>
+              {en.mod.openTarget}
+            </ButtonLink>
           </div>
           {appeal.status === 'OPEN' ? (
             <>
@@ -362,7 +415,10 @@ function Appeals() {
 }
 
 function Concerns() {
-  const query = useQuery({ queryKey: ['mod', 'concerns'], queryFn: () => api.get<{ items: ConcernItem[] }>('/api/mod/concerns') })
+  const query = useQuery({
+    queryKey: ['mod', 'concerns'],
+    queryFn: () => api.get<{ items: ConcernItem[] }>('/api/mod/concerns'),
+  })
   const resolve = (id: string, status: 'ACTIONED' | 'DISMISSED') =>
     api
       .post(`/api/mod/concerns/${id}/resolve`, { status })
@@ -377,9 +433,13 @@ function Concerns() {
       emptyText={en.mod.noConcerns}
     >
       {query.data?.items.map((concern) => (
-        <Panel key={concern.id} title={`${concern.name} · ${CONCERN_RELATIONS[concern.relation as ConcernRelation] ?? concern.relation}`}>
+        <Panel
+          key={concern.id}
+          title={`${concern.name} · ${CONCERN_RELATIONS[concern.relation as ConcernRelation] ?? concern.relation}`}
+        >
           <p className={ui.muted}>
-            {concern.email} · {formatDateTime(concern.confirmedAt)} · {en.moderation.reportStatus[concern.status]}
+            {concern.email} · {formatDateTime(concern.confirmedAt)} ·{' '}
+            {en.moderation.reportStatus[concern.status]}
           </p>
           {/* O link informado é mostrado como texto: nenhuma URL de usuário vira href */}
           <p className={ui.text}>{concern.contentUrl}</p>
@@ -410,12 +470,23 @@ function AuditLog() {
   const [event, setEvent] = useState('')
   const query = useQuery({
     queryKey: ['mod', 'audit', event],
-    queryFn: () => api.get<{ items: AuditRow[] }>(`/api/admin/audit${event ? `?event=${encodeURIComponent(event)}` : ''}`),
+    queryFn: () =>
+      api.get<{ items: AuditRow[] }>(`/api/admin/audit${event ? `?event=${encodeURIComponent(event)}` : ''}`),
   })
   return (
     <>
-      <Field label={en.mod.auditEvent} value={event} onChange={(e) => setEvent(e.target.value.toUpperCase().trim())} placeholder="LOGIN_FAILED" />
-      <QueryState loading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} empty={query.data?.items.length === 0}>
+      <Field
+        label={en.mod.auditEvent}
+        value={event}
+        onChange={(e) => setEvent(e.target.value.toUpperCase().trim())}
+        placeholder="LOGIN_FAILED"
+      />
+      <QueryState
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => void query.refetch()}
+        empty={query.data?.items.length === 0}
+      >
         <ul className={ui.list}>
           {query.data?.items.map((row) => (
             <li key={row.id} className={ui.item}>
@@ -444,7 +515,9 @@ function Users() {
     queryKey: ['mod', 'users', term],
     enabled: term.length >= 2,
     queryFn: () =>
-      api.get<{ items: { id: string; username: string; role: Role; status: string }[] }>(`/api/admin/users?q=${encodeURIComponent(term)}`),
+      api.get<{ items: { id: string; username: string; role: Role; status: string }[] }>(
+        `/api/admin/users?q=${encodeURIComponent(term)}`,
+      ),
   })
   const setRole = (id: string, role: Role) =>
     api
@@ -456,7 +529,12 @@ function Users() {
     <>
       <Field label={en.mod.findUser} value={q} onChange={(event) => setQ(event.target.value)} />
       {term.length >= 2 && (
-        <QueryState loading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} empty={query.data?.items.length === 0}>
+        <QueryState
+          loading={query.isLoading}
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          empty={query.data?.items.length === 0}
+        >
           <ul className={ui.list}>
             {query.data?.items.map((user) => (
               <li key={user.id} className={ui.item}>
@@ -470,7 +548,10 @@ function Users() {
                   label={en.mod.role}
                   value={user.role}
                   onChange={(event) => void setRole(user.id, event.target.value as Role)}
-                  options={(['USER', 'MODERATOR', 'ADMIN'] as const).map((role) => ({ value: role, label: role }))}
+                  options={(['USER', 'MODERATOR', 'ADMIN'] as const).map((role) => ({
+                    value: role,
+                    label: role,
+                  }))}
                 />
               </li>
             ))}
@@ -484,7 +565,8 @@ function Users() {
 function FilterTerms() {
   const query = useQuery({
     queryKey: ['mod', 'filter'],
-    queryFn: () => api.get<{ items: { term: string; severity: 'HIGH' | 'MEDIUM' }[] }>('/api/admin/filter-terms'),
+    queryFn: () =>
+      api.get<{ items: { term: string; severity: 'HIGH' | 'MEDIUM' }[] }>('/api/admin/filter-terms'),
   })
   const [term, setTerm] = useState('')
   const [severity, setSeverity] = useState<'HIGH' | 'MEDIUM'>('MEDIUM')
@@ -497,14 +579,21 @@ function FilterTerms() {
         setTerm('')
         return refresh()
       })
-      .catch((cause: unknown) => toast(cause instanceof ApiError ? cause.detail : errorMessage(cause), 'error'))
+      .catch((cause: unknown) =>
+        toast(cause instanceof ApiError ? cause.detail : errorMessage(cause), 'error'),
+      )
   }
   return (
     <>
       <Panel title={en.mod.filter}>
         <p className={ui.muted}>{en.mod.filterHint}</p>
         <form className={ui.form} onSubmit={add}>
-          <Field label={en.mod.term} value={term} maxLength={64} onChange={(event) => setTerm(event.target.value)} />
+          <Field
+            label={en.mod.term}
+            value={term}
+            maxLength={64}
+            onChange={(event) => setTerm(event.target.value)}
+          />
           <Select
             label={en.mod.severity}
             value={severity}
@@ -521,15 +610,27 @@ function FilterTerms() {
           </div>
         </form>
       </Panel>
-      <QueryState loading={query.isLoading} error={query.error} onRetry={() => void query.refetch()} empty={query.data?.items.length === 0}>
+      <QueryState
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => void query.refetch()}
+        empty={query.data?.items.length === 0}
+      >
         <ul className={ui.list}>
           {query.data?.items.map((item) => (
             <li key={item.term} className={ui.item}>
               <div className={ui.itemBody}>
                 <p className={ui.itemTitle}>{item.term}</p>
-                <p className={ui.itemMeta}>{item.severity === 'HIGH' ? en.mod.severityHigh : en.mod.severityMedium}</p>
+                <p className={ui.itemMeta}>
+                  {item.severity === 'HIGH' ? en.mod.severityHigh : en.mod.severityMedium}
+                </p>
               </div>
-              <Button className={ui.small} onClick={() => void api.delete('/api/admin/filter-terms', { term: item.term }).then(refresh).catch(fail)}>
+              <Button
+                className={ui.small}
+                onClick={() =>
+                  void api.delete('/api/admin/filter-terms', { term: item.term }).then(refresh).catch(fail)
+                }
+              >
                 {en.library.remove}
               </Button>
             </li>

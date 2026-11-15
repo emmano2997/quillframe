@@ -1,5 +1,7 @@
 .screen {
   display: grid;
+  /* Sem isto a coluna cresce com o conteúdo e a tela ganha rolagem horizontal no celular */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   min-height: 100%;
 }
@@ -72,6 +74,12 @@
 @media (max-width: 600px) {
   .logo {
     font-size: calc(16 * var(--gui));
+    letter-spacing: 0;
+  }
+
+  .logoArea {
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .splash {

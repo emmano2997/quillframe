@@ -5,7 +5,11 @@ import type { BookSummary } from '../api/types.ts'
 import { en, format } from '../strings/en.ts'
 import { BookIcon, cx, formatDate, formatRelative, ui } from '../ui/kit.tsx'
 
-const VISIBILITY_LABEL = { PRIVATE: en.book.private, FRIENDS: en.book.friends, PUBLIC: en.book.public } as const
+const VISIBILITY_LABEL = {
+  PRIVATE: en.book.private,
+  FRIENDS: en.book.friends,
+  PUBLIC: en.book.public,
+} as const
 
 export function bookBadge(book: BookSummary): { label: string; alert: boolean } {
   if (book.reviewState === 'PENDING_REVIEW') return { label: en.book.underReview, alert: true }
@@ -21,10 +25,13 @@ export function bookMeta(book: BookSummary, own: boolean): string {
     book.status === 'DRAFT'
       ? [format(en.book.edited, { when: formatRelative(book.updatedAt) }), pages]
       : [
-          own ? format(en.book.signedOn, { date: formatDate(book.signedAt) }) : format(en.reader.byAuthor, { author: book.author.username }),
+          own
+            ? format(en.book.signedOn, { date: formatDate(book.signedAt) })
+            : format(en.reader.byAuthor, { author: book.author.username }),
           pages,
         ]
-  if (book.likeCount > 0) parts.push(format(book.likeCount === 1 ? en.book.oneLike : en.book.likes, { count: book.likeCount }))
+  if (book.likeCount > 0)
+    parts.push(format(book.likeCount === 1 ? en.book.oneLike : en.book.likes, { count: book.likeCount }))
   return parts.join(' · ')
 }
 
@@ -67,7 +74,11 @@ export function BookRow({ book, own = false, selected = false, onSelect, onOpen,
           {body}
         </button>
       ) : (
-        <Link className={ui.item} to={book.status === 'DRAFT' ? `/editor/${book.id}` : `/book/${book.id}`} title={tooltip}>
+        <Link
+          className={ui.item}
+          to={book.status === 'DRAFT' ? `/editor/${book.id}` : `/book/${book.id}`}
+          title={tooltip}
+        >
           {body}
         </Link>
       )}

@@ -30,7 +30,10 @@ function AccountNotice({ me }: { me: Me }) {
     return (
       <div className={styles.notice} role="status">
         <p className={ui.text}>{en.title.pendingDeletion}</p>
-        <Button disabled={busy} onClick={() => void run(() => api.post('/api/me/restore'), en.title.restored)}>
+        <Button
+          disabled={busy}
+          onClick={() => void run(() => api.post('/api/me/restore'), en.title.restored)}
+        >
           {en.title.restore}
         </Button>
       </div>
@@ -54,7 +57,9 @@ function AccountNotice({ me }: { me: Me }) {
         <p className={ui.text}>{en.title.verifyEmail}</p>
         <Button
           disabled={busy}
-          onClick={() => void run(() => api.post('/api/auth/resend-verification', { email: me.email }), en.title.emailSent)}
+          onClick={() =>
+            void run(() => api.post('/api/auth/resend-verification', { email: me.email }), en.title.emailSent)
+          }
         >
           {en.title.resendEmail}
         </Button>

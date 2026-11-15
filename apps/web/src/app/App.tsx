@@ -2,7 +2,11 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router'
 import { setApiHandlers } from '../api/client.ts'
-import { ForgotPasswordScreen, ResetPasswordScreen, VerifyEmailScreen } from '../screens/auth/EmailLinkScreens.tsx'
+import {
+  ForgotPasswordScreen,
+  ResetPasswordScreen,
+  VerifyEmailScreen,
+} from '../screens/auth/EmailLinkScreens.tsx'
 import { LoginScreen } from '../screens/auth/LoginScreen.tsx'
 import { RegisterScreen, WelcomeScreen } from '../screens/auth/RegisterScreen.tsx'
 import { NotFoundScreen } from '../screens/NotFoundScreen.tsx'

@@ -41,7 +41,11 @@ describe('applyFormat sem seleção (documento 03, §5.4)', () => {
   it('mantém os estilos ativos ao trocar a cor no meio do texto', () => {
     const result = applyFormat('§l§ohello', 9, 9, '9')
     expect(result.text).toBe('§l§ohello§9§l§o')
-    expect(styleAt(result.text, result.selectionStart)).toMatchObject({ bold: true, italic: true, color: '9' })
+    expect(styleAt(result.text, result.selectionStart)).toMatchObject({
+      bold: true,
+      italic: true,
+      color: '9',
+    })
   })
 })
 
@@ -104,7 +108,10 @@ describe('fitChange (documento 03, §5.6)', () => {
   it('não deixa passar de 14 linhas', () => {
     const lines = 'x\n'.repeat(13) + 'x'
     // A 15ª linha não entra; o "\n" final cabe, porque a linha vazia depois dele não conta
-    expect(fitChange(lines, `${lines}\ny`, lines.length + 2)).toMatchObject({ text: `${lines}\n`, truncated: true })
+    expect(fitChange(lines, `${lines}\ny`, lines.length + 2)).toMatchObject({
+      text: `${lines}\n`,
+      truncated: true,
+    })
     expect(fitChange(`${lines}\n`, `${lines}\ny`, lines.length + 2).rejected).toBe(true)
     expect(fitChange(lines, `${lines}y`, lines.length + 1).rejected).toBe(false)
   })

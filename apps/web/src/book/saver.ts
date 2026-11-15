@@ -30,6 +30,11 @@ export class BookSaver {
     this.version = version
     this.pages = pages
     this.onState = onState
+  }
+
+  /** Liga os eventos da janela. Fica num efeito do React, que pode montar e desmontar mais de uma vez. */
+  attach(): void {
+    this.disposed = false
     window.addEventListener('online', this.onOnline)
     window.addEventListener('pagehide', this.onPageHide)
   }
@@ -121,7 +126,8 @@ export class BookSaver {
    */
   async structural(pages: string[], call: (version: number) => Promise<VersionResult>): Promise<void> {
     await this.flush()
-    if (this.dirty.size > 0) throw new ApiError(0, { detail: "Couldn't save. Check your connection and try again." })
+    if (this.dirty.size > 0)
+      throw new ApiError(0, { detail: "Couldn't save. Check your connection and try again." })
     const result = await call(this.version)
     this.version = result.version
     this.pages = pages
@@ -156,7 +162,11 @@ export class BookSaver {
     const content = index === undefined ? undefined : this.pages[index]
     if (index === undefined || content === undefined) return
     void api
-      .put(`/api/books/${this.bookId}/pages/${index}`, { content, baseVersion: this.version }, { keepalive: true, silent: true })
+      .put(
+        `/api/books/${this.bookId}/pages/${index}`,
+        { content, baseVersion: this.version },
+        { keepalive: true, silent: true },
+      )
       .catch(() => undefined)
   }
 }

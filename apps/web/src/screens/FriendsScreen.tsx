@@ -18,7 +18,15 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'blocked', label: en.friends.blocked },
 ]
 
-function PersonRow({ user, meta, actions }: { user: { username: string; avatarId: number }; meta?: string; actions: React.ReactNode }) {
+function PersonRow({
+  user,
+  meta,
+  actions,
+}: {
+  user: { username: string; avatarId: number }
+  meta?: string
+  actions: React.ReactNode
+}) {
   return (
     <li className={ui.item}>
       <Avatar id={user.avatarId} name={user.username} />
@@ -37,10 +45,14 @@ export default function FriendsScreen() {
   const [tab, setTab] = useState<Tab>('friends')
   const [username, setUsername] = useState('')
   const [busy, setBusy] = useState(false)
-  const friends = useQuery({ queryKey: ['friends', 'list'], queryFn: () => api.get<{ items: UserCard[] }>('/api/me/friends') })
+  const friends = useQuery({
+    queryKey: ['friends', 'list'],
+    queryFn: () => api.get<{ items: UserCard[] }>('/api/me/friends'),
+  })
   const requests = useQuery({
     queryKey: ['friends', 'requests'],
-    queryFn: () => api.get<{ received: FriendRequestCard[]; sent: FriendRequestCard[] }>('/api/me/friend-requests'),
+    queryFn: () =>
+      api.get<{ received: FriendRequestCard[]; sent: FriendRequestCard[] }>('/api/me/friend-requests'),
   })
   const blocks = useQuery({
     queryKey: ['friends', 'blocks'],
@@ -64,12 +76,16 @@ export default function FriendsScreen() {
 
   const add = (event: FormEvent) => {
     event.preventDefault()
-    void act(() => api.post('/api/friend-requests', { username: username.trim() }), en.profile.requestSent).then(() => setUsername(''))
+    void act(
+      () => api.post('/api/friend-requests', { username: username.trim() }),
+      en.profile.requestSent,
+    ).then(() => setUsername(''))
   }
 
   const received = requests.data?.received ?? []
   const sent = requests.data?.sent ?? []
-  const requestsLabel = received.length > 0 ? `${en.friends.requests} (${received.length})` : en.friends.requests
+  const requestsLabel =
+    received.length > 0 ? `${en.friends.requests} (${received.length})` : en.friends.requests
 
   return (
     <Screen title={en.title.friends} back="/" wide>
@@ -111,7 +127,11 @@ export default function FriendsScreen() {
                 user={user}
                 {...(user.since ? { meta: `${en.friends.since} ${formatDate(user.since)}` } : {})}
                 actions={
-                  <Button className={ui.small} disabled={busy} onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}>
+                  <Button
+                    className={ui.small}
+                    disabled={busy}
+                    onClick={() => void act(() => api.delete(`/api/friends/${user.username}`))}
+                  >
                     {en.profile.removeFriend}
                   </Button>
                 }
@@ -122,7 +142,11 @@ export default function FriendsScreen() {
       )}
 
       {tab === 'requests' && (
-        <QueryState loading={requests.isLoading} error={requests.error} onRetry={() => void requests.refetch()}>
+        <QueryState
+          loading={requests.isLoading}
+          error={requests.error}
+          onRetry={() => void requests.refetch()}
+        >
           <Panel title={en.friends.received}>
             {received.length === 0 ? (
               <p className={ui.muted}>{en.friends.noRequests}</p>
@@ -137,14 +161,21 @@ export default function FriendsScreen() {
                         <Button
                           className={ui.small}
                           disabled={busy}
-                          onClick={() => void act(() => api.post(`/api/friend-requests/${request.userId}/accept`), en.profile.nowFriends)}
+                          onClick={() =>
+                            void act(
+                              () => api.post(`/api/friend-requests/${request.userId}/accept`),
+                              en.profile.nowFriends,
+                            )
+                          }
                         >
                           {en.friends.accept}
                         </Button>
                         <Button
                           className={ui.small}
                           disabled={busy}
-                          onClick={() => void act(() => api.post(`/api/friend-requests/${request.userId}/decline`))}
+                          onClick={() =>
+                            void act(() => api.post(`/api/friend-requests/${request.userId}/decline`))
+                          }
                         >
                           {en.friends.decline}
                         </Button>
@@ -165,7 +196,11 @@ export default function FriendsScreen() {
                     key={request.userId}
                     user={request}
                     actions={
-                      <Button className={ui.small} disabled={busy} onClick={() => void act(() => api.delete(`/api/friends/${request.username}`))}>
+                      <Button
+                        className={ui.small}
+                        disabled={busy}
+                        onClick={() => void act(() => api.delete(`/api/friends/${request.username}`))}
+                      >
                         {en.common.cancel}
                       </Button>
                     }
@@ -192,7 +227,11 @@ export default function FriendsScreen() {
                 <div className={ui.itemBody}>
                   <p className={ui.itemTitle}>{user.username}</p>
                 </div>
-                <Button className={ui.small} disabled={busy} onClick={() => void act(() => api.delete(`/api/blocks/${user.username}`))}>
+                <Button
+                  className={ui.small}
+                  disabled={busy}
+                  onClick={() => void act(() => api.delete(`/api/blocks/${user.username}`))}
+                >
                   {en.friends.unblock}
                 </Button>
               </li>

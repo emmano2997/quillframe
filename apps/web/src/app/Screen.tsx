@@ -95,7 +95,12 @@ function UserMenu() {
         {unread > 0 ? `🔔 ${unread}` : '🔔'}
       </ButtonLink>
       <div className={ui.menu}>
-        <Button className={ui.small} aria-expanded={open} aria-haspopup="menu" onClick={() => setOpen((value) => !value)}>
+        <Button
+          className={ui.small}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          onClick={() => setOpen((value) => !value)}
+        >
           {me.username}
         </Button>
         {open && (
@@ -178,7 +183,6 @@ export function Screen({ title, children, back, wide = false, noEscape = false, 
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [back, noEscape])
 
   return (

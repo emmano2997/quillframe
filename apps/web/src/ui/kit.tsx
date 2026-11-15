@@ -217,9 +217,9 @@ export function Dialog({
       }
       // O foco fica dentro do diálogo
       if (event.key === 'Tab' && ref.current) {
-        const items = [...ref.current.querySelectorAll<HTMLElement>('input, textarea, select, button, a[href]')].filter(
-          (item) => !item.hasAttribute('disabled'),
-        )
+        const items = [
+          ...ref.current.querySelectorAll<HTMLElement>('input, textarea, select, button, a[href]'),
+        ].filter((item) => !item.hasAttribute('disabled'))
         const head = items[0]
         const tail = items.at(-1)
         if (!head || !tail) return
@@ -238,12 +238,21 @@ export function Dialog({
       previous?.focus()
     }
     // O diálogo é montado uma vez por abertura
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <div className={styles.overlay} onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div ref={ref} className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+    <div
+      className={styles.overlay}
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <div
+        ref={ref}
+        className={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
         <h2 id={titleId} className={styles.dialogTitle}>
           {title}
         </h2>
@@ -345,21 +354,19 @@ export function QueryState({
 // Avatares pré-definidos: cabeças em pixel art geradas de uma paleta (arte própria, sem upload)
 const SKIN = ['#f1c9a5', '#d9a066', '#8d5a3b', '#f7dcc0', '#b97a57', '#5d3a25']
 const HAIR = ['#2b1d12', '#7a4a1e', '#d8b24a', '#b8402c', '#3a3f6b', '#e8e8e8']
-const FACE = [
-  'HHHHHHHH',
-  'HHHHHHHH',
-  'HSSSSSSH',
-  'SSSSSSSS',
-  'SWESSEWS',
-  'SSSNNSSS',
-  'SSMMMMSS',
-  'SSSSSSSS',
-]
+const FACE = ['HHHHHHHH', 'HHHHHHHH', 'HSSSSSSH', 'SSSSSSSS', 'SWESSEWS', 'SSSNNSSS', 'SSMMMMSS', 'SSSSSSSS']
 
 export function Avatar({ id, large = false, name }: { id: number; large?: boolean; name?: string }) {
   const skin = SKIN[id % SKIN.length] ?? '#f1c9a5'
   const hair = HAIR[Math.floor(id / 2) % HAIR.length] ?? '#2b1d12'
-  const colors: Record<string, string> = { H: hair, S: skin, W: '#ffffff', E: '#2a2a5a', N: '#00000033', M: '#7a3b2e' }
+  const colors: Record<string, string> = {
+    H: hair,
+    S: skin,
+    W: '#ffffff',
+    E: '#2a2a5a',
+    N: '#00000033',
+    M: '#7a3b2e',
+  }
   return (
     <svg
       className={cx(styles.avatar, large && styles.avatarLarge)}
@@ -369,7 +376,9 @@ export function Avatar({ id, large = false, name }: { id: number; large?: boolea
       aria-label={name ? `${name}'s avatar` : 'Avatar'}
     >
       {FACE.flatMap((row, y) =>
-        [...row].map((cell, x) => <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={colors[cell]} />),
+        [...row].map((cell, x) => (
+          <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={colors[cell]} />
+        )),
       )}
     </svg>
   )

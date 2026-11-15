@@ -2,6 +2,8 @@
 import helmet from '@fastify/helmet'
 import type { FastifyInstance } from 'fastify'
 
+const TOKEN_PAGES = ['/verify-email', '/reset-password', '/report-concern']
+
 export async function registerSecurityHeaders(app: FastifyInstance): Promise<void> {
   await app.register(helmet, {
     contentSecurityPolicy: {
@@ -34,5 +36,8 @@ export async function registerSecurityHeaders(app: FastifyInstance): Promise<voi
   app.addHook('onSend', async (request, reply) => {
     void reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()')
     if (request.url.startsWith('/api/')) void reply.header('Cache-Control', 'no-store')
+    // Páginas que recebem token no fragmento: nada de Referer para fora (§5.11)
+    if (TOKEN_PAGES.some((page) => request.url.startsWith(page)))
+      void reply.header('Referrer-Policy', 'no-referrer')
   })
 }

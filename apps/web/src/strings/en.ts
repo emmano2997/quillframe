@@ -1,10 +1,9 @@
 // Todo texto visível do site fica aqui, em inglês (documento 03, §1.3).
 import { REPORT_REASONS } from '@quillframe/shared'
 
-const reasons = Object.fromEntries(Object.entries(REPORT_REASONS).map(([key, info]) => [key, info.label])) as Record<
-  keyof typeof REPORT_REASONS,
-  string
->
+const reasons = Object.fromEntries(
+  Object.entries(REPORT_REASONS).map(([key, info]) => [key, info.label]),
+) as Record<keyof typeof REPORT_REASONS, string>
 
 export const en = {
   app: {
@@ -103,7 +102,8 @@ export const en = {
     useAuthenticator: 'Use the authenticator app instead',
     oauthFailed: "We couldn't sign you in with that account. Please try again.",
     oauthUnverified: "That account's email isn't verified. Verify it with the provider and try again.",
-    oauthEmailExists: 'An account with this email already exists. Sign in with your password, then connect it in Options → Security.',
+    oauthEmailExists:
+      'An account with this email already exists. Sign in with your password, then connect it in Options → Security.',
     sessionExpired: 'Your session has expired. Please sign in again.',
     welcome: 'Welcome',
     welcomeIntro: 'One last step: choose your author name and tell us your date of birth.',
@@ -386,7 +386,8 @@ export const en = {
     appealUpheld: 'Your appeal was reviewed: the decision was upheld.',
     reportActioned: 'Thanks — we took action on the content you reported.',
     reportDismissed: 'We reviewed your report and found no violation.',
-    reportAbuse: 'Several of your reports were dismissed as made in bad faith. Reporting to harass someone breaks the Guidelines.',
+    reportAbuse:
+      'Several of your reports were dismissed as made in bad faith. Reporting to harass someone breaks the Guidelines.',
     newSignIn: 'New sign-in to your account: {device}.',
     protectionsLifted: 'You turned 18: your privacy settings are now yours to choose.',
     generic: 'You have a new notification.',
@@ -446,7 +447,7 @@ export const en = {
     allPriorities: 'All priorities',
     priority: 'P{priority}',
     emptyQueue: 'The queue is empty.',
-    reportCount: '{count} reports',
+    reportCount: 'reports: {count}',
     waiting: 'waiting since {when}',
     book: 'Book',
     user: 'User',
@@ -488,7 +489,8 @@ export const en = {
     findUser: 'Find user by username',
     role: 'Role',
     roleChanged: 'Role changed. The user was signed out everywhere.',
-    filterHint: 'High: the book waits for review before appearing. Medium: it is published and added to the queue.',
+    filterHint:
+      'High: the book waits for review before appearing. Medium: it is published and added to the queue.',
     term: 'Term or phrase',
     severity: 'Severity',
     severityHigh: 'High risk',
@@ -509,7 +511,8 @@ export const en = {
     qrLabel: 'QR code for your authenticator app',
     manual: "Can't scan? Type this key into the app:",
     recoveryTitle: 'Recovery Codes',
-    recoveryIntro: 'Each code signs you in once if you lose your phone. They are shown only this time: keep them somewhere safe.',
+    recoveryIntro:
+      'Each code signs you in once if you lose your phone. They are shown only this time: keep them somewhere safe.',
     download: 'Download',
     copy: 'Copy',
     copied: 'Recovery codes copied.',
@@ -543,7 +546,8 @@ export const en = {
     changePassword: 'Change Password',
     currentPassword: 'Current password',
     passwordChanged: 'Password changed. Your other devices were signed out.',
-    noPassword: 'This account signs in with Google or Discord and has no password. Use "Forgot password?" on the Sign In screen to create one.',
+    noPassword:
+      'This account signs in with Google or Discord and has no password. Use "Forgot password?" on the Sign In screen to create one.',
     sessions: 'Active Sessions',
     thisDevice: '(this device)',
     lastSeen: 'last seen {when}',
@@ -591,17 +595,21 @@ export const en = {
     on: 'ON',
     off: 'OFF',
     readableFont: 'Readable Font',
-    readableFontHint: 'Readable Font changes the interface only. Books always use the pixel font, because the art depends on it.',
+    readableFontHint:
+      'Readable Font changes the interface only. Books always use the pixel font, because the art depends on it.',
     reduceMotion: 'Reduce Motion',
     pageTurnAnimation: 'Page Turn Animation',
     masterVolume: 'Master Volume: {volume}%',
     interfaceSounds: 'Interface',
     bookSounds: 'Book',
-    readerKeys: 'In the reader: arrow keys or PageUp/PageDown turn pages, Home/End jump to the first and last page, Space plays.',
+    readerKeys:
+      'In the reader: arrow keys or PageUp/PageDown turn pages, Home/End jump to the first and last page, Space plays.',
     exportData: 'Export My Data',
-    exportHint: 'Download a ZIP file with your profile, books (JSON and .stendhal), likes, favorites, friends and security events. Once a day.',
+    exportHint:
+      'Download a ZIP file with your profile, books (JSON and .stendhal), likes, favorites, friends and security events. Once a day.',
     deleteAccount: 'Delete Account',
-    deleteHint: 'Your profile and books disappear right away. You have 30 days to sign in and restore the account; after that, everything is erased.',
+    deleteHint:
+      'Your profile and books disappear right away. You have 30 days to sign in and restore the account; after that, everything is erased.',
     typeUsername: 'Type your username ({username}) to confirm',
     deletionScheduled: 'Your account is scheduled for deletion. Sign in within 30 days to restore it.',
   },
@@ -609,7 +617,8 @@ export const en = {
     title: 'Report a Concern',
     intro:
       'Use this form to report content that violates the rights of a child or teenager. It is for victims, parents or guardians, public prosecutors and child protection organizations. No account needed.',
-    notAnonymous: 'This report is not anonymous: the law requires us to identify who sends it. We will email you a link to confirm it.',
+    notAnonymous:
+      'This report is not anonymous: the law requires us to identify who sends it. We will email you a link to confirm it.',
     name: 'Your name',
     relation: 'Your relationship to this case',
     link: 'Link to the content',

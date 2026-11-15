@@ -59,7 +59,14 @@ function ConcernForm() {
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     setFormError(null)
-    const parsed = concernSchema.safeParse({ name, email, relation, contentUrl, description, turnstileToken: captcha ?? '' })
+    const parsed = concernSchema.safeParse({
+      name,
+      email,
+      relation,
+      contentUrl,
+      description,
+      turnstileToken: captcha ?? '',
+    })
     if (!parsed.success) {
       const found: Record<string, string> = {}
       for (const issue of parsed.error.issues) found[String(issue.path[0])] ??= issue.message

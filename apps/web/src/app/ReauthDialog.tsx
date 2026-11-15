@@ -29,7 +29,9 @@ function ReauthForm() {
     setBusy(true)
     setError(null)
     try {
-      await api.post('/api/auth/reauth', mode === 'password' ? { password: value } : { code: value }, { silent: true })
+      await api.post('/api/auth/reauth', mode === 'password' ? { password: value } : { code: value }, {
+        silent: true,
+      })
       finish(true)
     } catch (cause) {
       setError(errorMessage(cause))

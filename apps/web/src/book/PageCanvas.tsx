@@ -76,7 +76,12 @@ interface PageCanvasProps {
   overlay?: Overlay | undefined
   label?: string
   /** Ponto da área de texto em pixels de GUI */
-  onPoint?: (x: number, y: number, phase: 'down' | 'move' | 'up', event: PointerEvent<HTMLCanvasElement>) => void
+  onPoint?: (
+    x: number,
+    y: number,
+    phase: 'down' | 'move' | 'up',
+    event: PointerEvent<HTMLCanvasElement>,
+  ) => void
   children?: ReactNode
 }
 
@@ -118,7 +123,12 @@ export function PageCanvas({
       }
       if (overlay.caret && blink && overlay.caret.line < BOOK.maxLines) {
         ctx.fillStyle = '#000'
-        ctx.fillRect(originX + overlay.caret.x * S, originY + overlay.caret.line * BOOK.lineHeight * S - S, S, BOOK.lineHeight * S)
+        ctx.fillRect(
+          originX + overlay.caret.x * S,
+          originY + overlay.caret.line * BOOK.lineHeight * S - S,
+          S,
+          BOOK.lineHeight * S,
+        )
       }
     }
     draw()
@@ -158,7 +168,9 @@ export function PageCanvas({
       style={{
         width: full,
         height: full,
-        ...(compact ? { marginLeft: -(BOOK.textX - MARGIN) * unit, marginTop: -(BOOK.textY - MARGIN) * unit } : {}),
+        ...(compact
+          ? { marginLeft: -(BOOK.textX - MARGIN) * unit, marginTop: -(BOOK.textY - MARGIN) * unit }
+          : {}),
         ...(onPoint ? { cursor: 'text', touchAction: 'none' } : {}),
       }}
       role="img"
@@ -181,7 +193,10 @@ export function PageCanvas({
       {compact ? (
         <div
           className={styles.compact}
-          style={{ width: (BOOK.textWidth + 2 * MARGIN) * unit, height: (BOOK.textHeight + 2 * MARGIN) * unit }}
+          style={{
+            width: (BOOK.textWidth + 2 * MARGIN) * unit,
+            height: (BOOK.textHeight + 2 * MARGIN) * unit,
+          }}
         >
           {canvas}
         </div>
@@ -194,7 +209,15 @@ export function PageCanvas({
 }
 
 /** Alternativa em texto de uma página, para leitores de tela (documento 03, §12). */
-export function PageText({ text, pageNumber, pageCount }: { text: string; pageNumber: number; pageCount: number }) {
+export function PageText({
+  text,
+  pageNumber,
+  pageCount,
+}: {
+  text: string
+  pageNumber: number
+  pageCount: number
+}) {
   return (
     <section className="sr-only" aria-live="polite" aria-label={en.reader.textView}>
       <p>{format(en.reader.pageIndicator, { page: pageNumber, total: pageCount })}</p>

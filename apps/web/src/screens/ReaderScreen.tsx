@@ -1,5 +1,13 @@
 // Written Book: o leitor (documento 03, §6), com o modo Play que vira as páginas em animação.
-import { BOOK, GUIDELINES, layoutPage, LIMITS, stripFormatting, type GuidelineId, type Visibility } from '@quillframe/shared'
+import {
+  BOOK,
+  GUIDELINES,
+  layoutPage,
+  LIMITS,
+  stripFormatting,
+  type GuidelineId,
+  type Visibility,
+} from '@quillframe/shared'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type TouchEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -14,7 +22,18 @@ import { renderPage } from '../book/render.ts'
 import { en, format } from '../strings/en.ts'
 import { toast, usePreferences } from '../stores/app.ts'
 import { Button } from '../ui/Button.tsx'
-import { ButtonLink, Check, Confirm, cx, Dialog, Field, formatDate, Panel, QueryState, Select, ui } from '../ui/kit.tsx'
+import {
+  ButtonLink,
+  Check,
+  Confirm,
+  cx,
+  Field,
+  formatDate,
+  Panel,
+  QueryState,
+  Select,
+  ui,
+} from '../ui/kit.tsx'
 import { playPageTurn } from '../ui/sounds.ts'
 import { useGuiScale } from '../ui/useGuiScale.ts'
 import styles from './ReaderScreen.module.css'
@@ -64,15 +83,33 @@ function useReaderScale(): { scale: number; compact: boolean } {
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
-  if (width >= 600) return { scale: Math.max(1, Math.min(gui, Math.floor((width - 16) / BOOK.imageWidth))), compact: false }
+  if (width >= 600)
+    return { scale: Math.max(1, Math.min(gui, Math.floor((width - 16) / BOOK.imageWidth))), compact: false }
   return { scale: Math.max(1, Math.floor((width - 8) / (BOOK.textWidth + 8))), compact: true }
 }
 
-function Thumbnail({ text, number, total, glyphs }: { text: string; number: number; total: number; glyphs: GlyphSource }) {
+function Thumbnail({
+  text,
+  number,
+  total,
+  glyphs,
+}: {
+  text: string
+  number: number
+  total: number
+  glyphs: GlyphSource
+}) {
   const ref = useRef<HTMLCanvasElement>(null)
   useEffect(() => {
     const ctx = ref.current?.getContext('2d')
-    if (ctx) renderPage(ctx, layoutPage(text), { glyphs, background: null, pageNumber: number, pageCount: total, random: () => 0 })
+    if (ctx)
+      renderPage(ctx, layoutPage(text), {
+        glyphs,
+        background: null,
+        pageNumber: number,
+        pageCount: total,
+        random: () => 0,
+      })
   }, [text, number, total, glyphs])
   return (
     <canvas
@@ -186,7 +223,8 @@ function Reader({ book }: { book: BookDetail }) {
     else if (event.key === 'ArrowRight' || event.key === 'PageDown') turn(pageIndex + 1)
     else if (event.key === 'Home') turn(0)
     else if (event.key === 'End') turn(last)
-    else if (event.key === ' ' && target.tagName !== 'BUTTON' && target.tagName !== 'A') setPlaying((value) => !value)
+    else if (event.key === ' ' && target.tagName !== 'BUTTON' && target.tagName !== 'A')
+      setPlaying((value) => !value)
     else return
     event.preventDefault()
   }
@@ -284,7 +322,9 @@ function Reader({ book }: { book: BookDetail }) {
       </p>
 
       <ReviewBanner book={book} onAppeal={() => setDialog('appeal')} />
-      {pages.length > LIMITS.gamePages && own && <p className={cx(ui.warning, ui.center)}>{en.editor.over100Pages}</p>}
+      {pages.length > LIMITS.gamePages && own && (
+        <p className={cx(ui.warning, ui.center)}>{en.editor.over100Pages}</p>
+      )}
 
       <div
         tabIndex={0}
@@ -309,11 +349,21 @@ function Reader({ book }: { book: BookDetail }) {
 
       <div className={ui.row}>
         {/* Como no jogo, os botões somem na primeira e na última página */}
-        <Button className={cx(ui.small, pageIndex === 0 && styles.invisible)} onClick={() => turn(pageIndex - 1)} aria-label={en.reader.previousPage}>
+        <Button
+          className={cx(ui.small, pageIndex === 0 && styles.invisible)}
+          onClick={() => turn(pageIndex - 1)}
+          aria-label={en.reader.previousPage}
+        >
           {'<'}
         </Button>
-        <p className={ui.text}>{format(en.reader.pageIndicator, { page: pageIndex + 1, total: pages.length })}</p>
-        <Button className={cx(ui.small, pageIndex >= last && styles.invisible)} onClick={() => turn(pageIndex + 1)} aria-label={en.reader.nextPage}>
+        <p className={ui.text}>
+          {format(en.reader.pageIndicator, { page: pageIndex + 1, total: pages.length })}
+        </p>
+        <Button
+          className={cx(ui.small, pageIndex >= last && styles.invisible)}
+          onClick={() => turn(pageIndex + 1)}
+          aria-label={en.reader.nextPage}
+        >
           {'>'}
         </Button>
       </div>
@@ -332,18 +382,37 @@ function Reader({ book }: { book: BookDetail }) {
         </Button>
         <label className={styles.speed}>
           <span>{format(en.reader.speed, { speed })}</span>
-          <input type="range" min={1} max={20} value={speed} onChange={(event) => setSpeed(Number(event.target.value))} />
+          <input
+            type="range"
+            min={1}
+            max={20}
+            value={speed}
+            onChange={(event) => setSpeed(Number(event.target.value))}
+          />
         </label>
-        <Button className={cx(ui.small, loop && ui.tabActive)} aria-pressed={loop} onClick={() => setLoop((value) => !value)}>
+        <Button
+          className={cx(ui.small, loop && ui.tabActive)}
+          aria-pressed={loop}
+          onClick={() => setLoop((value) => !value)}
+        >
           {en.reader.loop}
         </Button>
-        <Button className={cx(ui.small, panel === 'pages' && ui.tabActive)} onClick={() => setPanel(panel === 'pages' ? null : 'pages')}>
+        <Button
+          className={cx(ui.small, panel === 'pages' && ui.tabActive)}
+          onClick={() => setPanel(panel === 'pages' ? null : 'pages')}
+        >
           {en.reader.pages}
         </Button>
-        <Button className={cx(ui.small, panel === 'search' && ui.tabActive)} onClick={() => setPanel(panel === 'search' ? null : 'search')}>
+        <Button
+          className={cx(ui.small, panel === 'search' && ui.tabActive)}
+          onClick={() => setPanel(panel === 'search' ? null : 'search')}
+        >
           {en.reader.search}
         </Button>
-        <Button className={cx(ui.small, panel === 'text' && ui.tabActive)} onClick={() => setPanel(panel === 'text' ? null : 'text')}>
+        <Button
+          className={cx(ui.small, panel === 'text' && ui.tabActive)}
+          onClick={() => setPanel(panel === 'text' ? null : 'text')}
+        >
           {en.reader.textViewButton}
         </Button>
       </div>
@@ -366,7 +435,9 @@ function Reader({ book }: { book: BookDetail }) {
           </div>
           {thumbs < pages.length && (
             <div className={ui.row}>
-              <Button onClick={() => setThumbs((count) => count + THUMBS_PER_STEP)}>{en.common.loadMore}</Button>
+              <Button onClick={() => setThumbs((count) => count + THUMBS_PER_STEP)}>
+                {en.common.loadMore}
+              </Button>
             </div>
           )}
         </Panel>
@@ -374,8 +445,15 @@ function Reader({ book }: { book: BookDetail }) {
 
       {panel === 'search' && (
         <Panel title={en.reader.search}>
-          <Field label={en.reader.searchLabel} value={search} onChange={(event) => setSearch(event.target.value)} autoFocus />
-          {search.trim().length >= 2 && hits.length === 0 && <p className={ui.muted}>{en.reader.noResults}</p>}
+          <Field
+            label={en.reader.searchLabel}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            autoFocus
+          />
+          {search.trim().length >= 2 && hits.length === 0 && (
+            <p className={ui.muted}>{en.reader.noResults}</p>
+          )}
           <ul className={ui.list}>
             {hits.map((item, index) => (
               <li key={index}>
@@ -406,10 +484,18 @@ function Reader({ book }: { book: BookDetail }) {
       {interactive && (
         <>
           <div className={ui.row}>
-            <Button className={liked ? ui.tabActive : undefined} aria-pressed={liked} onClick={() => void toggleLike()}>
+            <Button
+              className={liked ? ui.tabActive : undefined}
+              aria-pressed={liked}
+              onClick={() => void toggleLike()}
+            >
               {format(en.reader.like, { count: likeCount })}
             </Button>
-            <Button className={favorited ? ui.tabActive : undefined} aria-pressed={favorited} onClick={() => void toggleFavorite()}>
+            <Button
+              className={favorited ? ui.tabActive : undefined}
+              aria-pressed={favorited}
+              onClick={() => void toggleFavorite()}
+            >
               {favorited ? en.reader.favorited : en.reader.favorite}
             </Button>
             {canCopy && <Button onClick={() => void makeCopy()}>{en.reader.makeCopy}</Button>}
@@ -429,9 +515,17 @@ function Reader({ book }: { book: BookDetail }) {
       {own && <OwnerPanel book={book} onDelete={() => setDialog('delete')} />}
 
       {dialog === 'report' && (
-        <ReportDialog targetType="BOOK" targetId={book.id} pageIndex={pageIndex} pageCount={pages.length} onClose={() => setDialog(null)} />
+        <ReportDialog
+          targetType="BOOK"
+          targetId={book.id}
+          pageIndex={pageIndex}
+          pageCount={pages.length}
+          onClose={() => setDialog(null)}
+        />
       )}
-      {dialog === 'appeal' && book.moderation && <AppealDialog actionId={book.moderation.actionId} onClose={() => setDialog(null)} />}
+      {dialog === 'appeal' && book.moderation && (
+        <AppealDialog actionId={book.moderation.actionId} onClose={() => setDialog(null)} />
+      )}
       {dialog === 'delete' && (
         <Confirm
           title={en.reader.deleteBook}
@@ -471,11 +565,15 @@ function ReviewBanner({ book, onAppeal }: { book: BookDetail; onAppeal: () => vo
         <>
           <p className={ui.text}>
             {format(en.moderation.rule, {
-              rule: moderation.guideline ? (GUIDELINES[moderation.guideline as GuidelineId] ?? moderation.guideline) : en.nav.guidelines,
+              rule: moderation.guideline
+                ? (GUIDELINES[moderation.guideline as GuidelineId] ?? moderation.guideline)
+                : en.nav.guidelines,
             })}
           </p>
           <p className={ui.text}>{format(en.moderation.reason, { reason: moderation.reason })}</p>
-          <p className={ui.muted}>{moderation.automated ? en.moderation.automated : en.moderation.byModerator}</p>
+          <p className={ui.muted}>
+            {moderation.automated ? en.moderation.automated : en.moderation.byModerator}
+          </p>
           {moderation.appealStatus ? (
             <p className={ui.text}>{en.appeal.status[moderation.appealStatus]}</p>
           ) : (
@@ -547,7 +645,10 @@ function OwnerPanel({ book, onDelete }: { book: BookDetail; onDelete: () => void
 
   const saveVisibility = () =>
     api
-      .patch(`/api/books/${book.id}/visibility`, { visibility, ...(shared ? { acceptGuidelines: guidelines } : {}) })
+      .patch(`/api/books/${book.id}/visibility`, {
+        visibility,
+        ...(shared ? { acceptGuidelines: guidelines } : {}),
+      })
       .then(async () => {
         await refresh()
         await queryClient.invalidateQueries({ queryKey: ['library'] })
@@ -600,7 +701,9 @@ function OwnerPanel({ book, onDelete }: { book: BookDetail; onDelete: () => void
         {format(en.reader.numbers, { likes: book.likeCount, favorites: book.favoriteCount })}
       </p>
       <div className={cx(ui.row, ui.rowStart)}>
-        <Button onClick={() => void download(`/api/books/${book.id}/export`, 'book.stendhal').catch(fail)}>{en.editor.export}</Button>
+        <Button onClick={() => void download(`/api/books/${book.id}/export`, 'book.stendhal').catch(fail)}>
+          {en.editor.export}
+        </Button>
         <Button className={ui.danger} onClick={onDelete}>
           {en.reader.deleteBook}
         </Button>
@@ -608,4 +711,3 @@ function OwnerPanel({ book, onDelete }: { book: BookDetail; onDelete: () => void
     </Panel>
   )
 }
-
