@@ -40,6 +40,14 @@ pnpm typecheck        # TypeScript
 pnpm build            # build do site (apps/web/dist)
 ```
 
+Testes de ponta a ponta (Playwright, no Chromium), com o Postgres e o Mailpit do `docker compose` no ar:
+
+```sh
+pnpm e2e:install      # uma vez: baixa o Chromium do Playwright
+pnpm build            # os testes usam o site compilado, servido pela API na porta 3100
+pnpm e2e              # cria e esvazia o banco quillframe_e2e, roda o seed e os testes
+```
+
 Para servir o site pela própria API, na mesma origem, como em produção: `pnpm build` e suba a API com `WEB_DIST=../web/dist`.
 
 Outros comandos: `pnpm jobs` (jobs diários: limpeza, exclusão de contas, strikes, retenção) e `pnpm secret` (gera um segredo de 32 bytes).

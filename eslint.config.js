@@ -10,6 +10,8 @@ export default defineConfig(
       '**/dist/**',
       '**/coverage/**',
       '.reference-pack/**',
+      'e2e/playwright-report/**',
+      'e2e/test-results/**',
       '**/*.generated.ts',
     ],
   },

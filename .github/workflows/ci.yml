@@ -49,6 +49,43 @@ jobs:
       - run: pnpm build
       - run: pnpm audit --prod --audit-level high
 
+  # Testes de ponta a ponta no Chromium (documento 03, §15): a API servindo o site compilado, com
+  # Postgres e Mailpit (os e-mails de verificação são lidos pela API HTTP dele).
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: quillframe
+          POSTGRES_PASSWORD: quillframe_ci_only
+          POSTGRES_DB: quillframe_e2e
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U quillframe -d quillframe_e2e"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      mailpit:
+        image: axllent/mailpit:v1.31.6
+        ports:
+          - '8025:8025'
+    env:
+      E2E_DATABASE_URL: postgresql://quillframe:quillframe_ci_only@127.0.0.1:5432/quillframe_e2e
+      E2E_MAILPIT_URL: http://127.0.0.1:8025
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @quillframe/e2e exec playwright install --with-deps chromium
+      - run: pnpm e2e
+
   secrets:
     runs-on: ubuntu-latest
     steps:

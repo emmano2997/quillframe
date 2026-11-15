@@ -3,8 +3,8 @@
 //
 //   pnpm db:seed
 //
-// As contas da equipe já vêm com 2FA (sem ele o painel /mod não abre). O segredo TOTP abaixo é fixo
-// e público: serve só para o banco local.
+// As contas da equipe já vêm com 2FA (sem ele o painel /mod não abre). A senha e o segredo TOTP, fixos
+// e públicos, ficam em seed-accounts.ts: servem só para o banco local.
 import {
   parseStendhal,
   sanitizeLine,
@@ -18,6 +18,7 @@ import { createDb } from '../app.ts'
 import { loadConfig } from '../config.ts'
 import { PasswordHasher } from '../security/password.ts'
 import { base32Encode, encryptSecret, otpauthUri } from '../security/totp.ts'
+import { DEV_PASSWORD, DEV_TOTP_SECRET, DEV_USERS, devEmail } from './seed-accounts.ts'
 
 const config = loadConfig()
 if (config.NODE_ENV === 'production') {
@@ -25,16 +26,7 @@ if (config.NODE_ENV === 'production') {
   process.exit(1)
 }
 
-/** Senha de todas as contas do seed. Só existe no banco local de desenvolvimento. */
-const DEV_PASSWORD = 'quillframe local development only'
-const DEV_TOTP_SECRET = Buffer.from('quillframe-dev-totp!')
-
-const USERS = [
-  { username: 'quill_admin', role: 'ADMIN', staff: true },
-  { username: 'quill_mod', role: 'MODERATOR', staff: true },
-  { username: 'quill_writer', role: 'USER', staff: false },
-  { username: 'quill_reader', role: 'USER', staff: false },
-] as const
+const USERS = DEV_USERS
 
 const db = createDb(config)
 const hasher = new PasswordHasher(config.passwordPeppers, config.passwordPepperCurrent)
@@ -46,7 +38,7 @@ if (!key) throw new Error('Chave do 2FA ausente')
 
 const ids = new Map<string, string>()
 for (const account of USERS) {
-  const email = `${account.username}@quillframe.test`
+  const email = devEmail(account.username)
   const stored = await hasher.hash(DEV_PASSWORD)
   const user = await db.user.upsert({
     where: { email },
@@ -117,7 +109,7 @@ if (!(await db.book.count({ where: { ownerId: writerId, status: 'DRAFT' } }))) {
 
 await db.$disconnect()
 console.log(`Seed pronto: ${USERS.length} contas, ${imported} livros importados.`)
-console.log(`  Contas: ${USERS.map((account) => `${account.username}@quillframe.test`).join(', ')}`)
+console.log(`  Contas: ${USERS.map((account) => devEmail(account.username)).join(', ')}`)
 console.log(`  Senha (só neste banco local): ${DEV_PASSWORD}`)
 console.log(`  2FA de quill_admin e quill_mod: segredo ${base32Encode(DEV_TOTP_SECRET)}`)
 console.log(`  ${otpauthUri(DEV_TOTP_SECRET, 'dev')}`)

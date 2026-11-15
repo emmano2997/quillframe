@@ -1,6 +1,8 @@
 packages:
   - apps/*
   - packages/*
+  # Testes de ponta a ponta no navegador (documento 03, §15)
+  - e2e
 
 # Só instala versões publicadas há pelo menos 3 dias (em minutos).
 # A maioria dos pacotes comprometidos é descoberta nesse intervalo (documento 02, §5.14).

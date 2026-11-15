@@ -209,6 +209,7 @@ export default function LibraryScreen() {
           ref={fileInput}
           className="sr-only"
           type="file"
+          aria-label={en.editor.importTitle}
           accept=".stendhal,.txt"
           tabIndex={-1}
           onChange={(event) => void onFile(event)}

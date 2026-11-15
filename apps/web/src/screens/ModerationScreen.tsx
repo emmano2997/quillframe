@@ -363,7 +363,10 @@ function Appeals() {
     }
     void api
       .post(`/api/mod/appeals/${appeal.id}/decide`, parsed.data)
-      .then(() => queryClient.invalidateQueries({ queryKey: ['mod'] }))
+      .then(() => {
+        toast(en.mod.actionDone)
+        return queryClient.invalidateQueries({ queryKey: ['mod'] })
+      })
       .catch(fail)
   }
 

@@ -22,3 +22,7 @@ Thumbs.db
 
 # Cliente do Prisma, gerado por `prisma generate` (roda no postinstall da API)
 apps/api/src/generated/
+
+# Resultados dos testes E2E (Playwright)
+e2e/playwright-report/
+e2e/test-results/
