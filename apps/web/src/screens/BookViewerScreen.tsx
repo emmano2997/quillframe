@@ -1,5 +1,6 @@
 import { GLYPH_KIND, glyphKind, parseStendhal, unifontPart, type StendhalBook } from '@quillframe/shared'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useNavigate } from 'react-router'
 import { BookView } from '../book/BookView.tsx'
 import {
   createBoxGlyphs,
@@ -9,18 +10,14 @@ import {
   type GlyphSource,
 } from '../book/glyphs.ts'
 import { en, format } from '../strings/en.ts'
+import { usePreferences } from '../stores/app.ts'
 import { Button } from '../ui/Button.tsx'
+import { useGuiScale } from '../ui/useGuiScale.ts'
 import styles from './BookViewerScreen.module.css'
 
 interface SampleBook {
   name: string
   load: () => Promise<string>
-}
-
-interface BookViewerScreenProps {
-  onBack: () => void
-  guiScale: number
-  onCycleScale: () => void
 }
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024
@@ -53,7 +50,19 @@ async function loadBackground(): Promise<HTMLImageElement | null> {
   )
 }
 
-export function BookViewerScreen({ onBack, guiScale, onCycleScale }: BookViewerScreenProps) {
+const SCALES = ['auto', 2, 3, 4] as const
+
+/** Ferramenta de desenvolvimento: compara a fonte do projeto com o pacote de referência local. */
+export default function BookViewerScreen() {
+  const navigate = useNavigate()
+  const preference = usePreferences((state) => state.guiScale)
+  const setPreferences = usePreferences((state) => state.set)
+  const guiScale = useGuiScale(preference === 'auto' ? null : preference)
+  const onBack = () => void navigate('/')
+  const onCycleScale = () => {
+    const index = SCALES.indexOf(preference as (typeof SCALES)[number])
+    setPreferences({ guiScale: SCALES[(index + 1) % SCALES.length] ?? 'auto' })
+  }
   const [samples, setSamples] = useState<SampleBook[]>([])
   const [book, setBook] = useState<StendhalBook | null>(null)
   const [error, setError] = useState<string | null>(null)

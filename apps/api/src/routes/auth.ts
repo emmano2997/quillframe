@@ -21,6 +21,7 @@ import {
   describeDevice,
   issueCsrf,
   requireAuth,
+  requireReauth,
   revokeSessions,
   setCookie,
   startSession,
@@ -368,6 +369,13 @@ export function registerAuthRoutes(app: FastifyInstance, deps: Deps): void {
       })
     }
     await db.session.update({ where: { id: auth.session.id }, data: { reauthAt: deps.now() } })
+    return { ok: true }
+  })
+
+  // O front chama antes de sair para uma navegação que exige step-up (vincular Google/Discord):
+  // se a confirmação não for recente, responde REAUTH_REQUIRED e o modal aparece
+  app.post('/api/auth/reauth/check', async (request) => {
+    requireReauth(deps, request)
     return { ok: true }
   })
 

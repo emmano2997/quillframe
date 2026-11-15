@@ -51,10 +51,30 @@
   gap: calc(4 * var(--gui));
 }
 
-.footer {
+.notice {
   display: flex;
-  justify-content: space-between;
-  gap: calc(8 * var(--gui));
-  padding: calc(2 * var(--gui)) calc(4 * var(--gui));
-  font-size: calc(8 * var(--gui));
+  flex-direction: column;
+  align-items: center;
+  gap: calc(3 * var(--gui));
+  max-width: calc(220 * var(--gui));
+  padding: calc(4 * var(--gui));
+  text-align: center;
+  background: var(--panel);
+  border: var(--gui) solid var(--splash);
+}
+
+.version {
+  margin: 0;
+  padding: 0 calc(4 * var(--gui));
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .logo {
+    font-size: calc(16 * var(--gui));
+  }
+
+  .splash {
+    display: none;
+  }
 }
