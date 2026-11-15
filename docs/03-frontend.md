@@ -737,13 +737,20 @@ Alinhado às fases do documento 02, §9.
 
 | Fase | Front-end |
 |---|---|
-| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor. **Feito em 15/10/2026**: renderer e "Book Viewer" com o pacote de referência local, botão no estilo do jogo, escala de GUI. **Pendente**: a arte da fonte própria e o WOFF2, que dependem do desenho dos glifos |
-| Fase 1 · Contas | Title Screen, cadastro, login, verificação, reset de senha, Options básico |
-| Fase 2 · Livros | editor completo, My Books, assinatura, importar/exportar, autosave e modo offline |
-| Fase 3 · Social | leitor completo (Play, índice, busca), Community, perfis, amigos, notificações |
-| Fase 4 · Moderação | denúncias, página de diretrizes, Report a Concern, painel `/mod` |
-| Fase 5 · Segurança avançada | 2FA, Google, Discord, sessões, step-up, Options → Security |
-| Fase 6 · Lançamento | revisão de acessibilidade e performance, páginas legais (inglês + português), E2E completo |
+| Fase 0 · Fundação | componentes `ui/`, pipeline da fonte (atlas + WOFF2), renderer do livro só para leitura, validado com os livros do autor. **Feito em 15/10/2026**: renderer e "Book Viewer" com o pacote de referência local, botão no estilo do jogo, escala de GUI. **Depois**: fonte própria, recorte da GNU Unifont e WOFF2 da interface (documento 05) |
+| Fase 1 · Contas | Title Screen, cadastro, login, verificação, reset de senha, Options básico. **Feito em 15/11/2026** |
+| Fase 2 · Livros | editor completo, My Books, assinatura, importar/exportar, autosave e modo offline. **Feito em 15/11/2026** |
+| Fase 3 · Social | leitor completo (Play, índice, busca), Community, perfis, amigos, notificações. **Feito em 15/11/2026** |
+| Fase 4 · Moderação | denúncias, página de diretrizes, Report a Concern, painel `/mod`. **Feito em 15/11/2026** |
+| Fase 5 · Segurança avançada | 2FA, Google, Discord, sessões, step-up, Options → Security. **Feito em 15/11/2026** |
+| Fase 6 · Lançamento | revisão de acessibilidade e performance, páginas legais (inglês + português), E2E completo. **Em parte (15/11/2026)**: as páginas legais existem como rascunho; faltam a revisão de acessibilidade, o Lighthouse e os testes E2E |
+
+**Como ficou na implementação (15/11/2026)**
+- **Conferido no navegador:** login com 2FA, My Books, editor (digitar, formatar, desfazer, páginas, limite de 14 linhas, autosave), assinatura, leitor (Play, índice, busca, like, comentário), Community, perfis, Options, painel `/mod`, larguras de computador e de celular sem rolagem horizontal, e o build de produção servido pela API sob a CSP, sem violações. Não foram conferidos: o visual de cada tela por captura, o cadastro com e-mail de verdade e o fluxo com Google/Discord.
+- **Não feito:** Playwright (E2E, regressão visual, axe-core), Testing Library, Lighthouse, Sentry, a regra de lint que proíbe texto solto (§1.3), o panorama da Title Screen e a animação de virar página.
+- **Diferente do planejado:** formulários com estado local e os schemas zod do `packages/shared` (sem react-hook-form); medidor de senha simples, por tamanho (sem zxcvbn-ts); o estado do editor fica no componente (o Zustand guarda preferências, toasts e o step-up); o modo Raw mostra a contagem dos códigos inválidos em vez de destacá-los em amarelo; a busca de símbolos é pelo caractere ou pelo código, não pelo nome; "Optimize codes" e a seção "Notifications" de Options ficaram de fora (a API não guarda essa preferência).
+- **GUI Scale: Auto** usa 180 px de largura de referência (não os 320 do jogo), para um celular em pé ficar em 2×: na 1× os botões ficariam abaixo do alvo mínimo de toque (§12).
+- Os sons são sintetizados no navegador (Web Audio), sem arquivos de áudio.
 
 ---
 

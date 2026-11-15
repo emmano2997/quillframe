@@ -19,3 +19,6 @@ coverage/
 .DS_Store
 Thumbs.db
 *.log
+
+# Cliente do Prisma, gerado por `prisma generate` (roda no postinstall da API)
+apps/api/src/generated/

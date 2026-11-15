@@ -6,6 +6,16 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      # react e react-dom precisam da mesma versão exata: sobem sempre juntos
+      react:
+        patterns:
+          - react
+          - react-dom
+      # O cliente e a CLI do Prisma também andam juntos
+      prisma:
+        patterns:
+          - prisma
+          - '@prisma/*'
       dev-tools:
         dependency-type: development
 

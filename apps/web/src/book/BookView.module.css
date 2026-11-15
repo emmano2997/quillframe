@@ -21,3 +21,9 @@
   color: var(--splash);
   text-align: center;
 }
+
+/* Leitor no celular: só a área de texto, sem a moldura do livro (documento 03, §13) */
+.compact {
+  overflow: hidden;
+  background: #efe2bf;
+}

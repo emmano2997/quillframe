@@ -1,0 +1,75 @@
+.reader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(4 * var(--gui));
+  width: 100%;
+}
+
+.stage {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  touch-action: pan-y;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.speed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(1 * var(--gui));
+}
+
+.speed input {
+  width: calc(80 * var(--gui));
+  accent-color: #a0a0a0;
+}
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2 * var(--gui));
+  width: 100%;
+  padding: calc(4 * var(--gui));
+  text-align: center;
+  background: var(--panel);
+  border: var(--gui) solid var(--splash);
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(48 * var(--gui)), 1fr));
+  gap: calc(2 * var(--gui));
+  max-height: calc(200 * var(--gui));
+  overflow: auto;
+}
+
+.thumbButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(1 * var(--gui));
+  font: inherit;
+  color: var(--text-muted);
+  background: none;
+  border: var(--gui) solid transparent;
+  cursor: pointer;
+}
+
+.thumbButton:hover,
+.thumbButton:focus-visible,
+.thumbActive {
+  border-color: var(--focus);
+  outline: none;
+}
+
+.thumb {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
