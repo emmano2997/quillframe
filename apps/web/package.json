@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@quillframe/shared": "workspace:*",
-    "@tanstack/react-query": "^5.107.1",
+    "@tanstack/react-query": "^5.108.4",
     "idb-keyval": "^6.3.0",
     "qrcode-generator": "^2.0.4",
     "react": "^19.3.1",
